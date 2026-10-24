@@ -138,3 +138,8 @@ section.rg-hero>.rg81,section.rg-hero>.rg113{position:relative;z-index:1}
   .rg188{width:100%;text-align:center}
   .wb-hero{min-height:280px}
 }
+
+/* ---- Products page: the product tabs sit in a strip below the banner photo ---- */
+.rg-tabstrip{background:#2c2e35}
+.rg-tabstrip-in{max-width:1280px;margin:0 auto;padding:22px 32px 0}
+@media (max-width:768px){.rg-tabstrip-in{padding:16px 16px 0}}
