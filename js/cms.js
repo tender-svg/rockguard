@@ -113,6 +113,7 @@
   // in edit mode links / navigation buttons must not leave the page (tabs and filters keep working)
   function onClickCapture(e) {
     if (!editing) return; if (e.target.closest('#cms-admin-bar,#cms-dash,#cms-confirm,#cms-linked,.cms-img-badge,.cms-dyn-badge,.rl-ctl')) return;
+    if (e.target.closest('label') && e.target.closest('[contenteditable="true"]')) { e.preventDefault(); return; }   // a form label being edited must not jump into its field
     var nav = e.target.closest('a[href]:not([href^="#"]), [data-href], [data-scroll]');
     if (nav && !(e.ctrlKey || e.metaKey)) {
       e.preventDefault(); e.stopImmediatePropagation();

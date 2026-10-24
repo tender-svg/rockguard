@@ -271,10 +271,19 @@ function markStructure(html, pageKey) {
       walk(item);
     });
   };
+  // a label with a field inside (form labels): its text goes into a span so it can be keyed / edited like every other text
+  $m('label').each((i, lb) => {
+    const kids = lb.children || []; const first = kids[0];
+    if (!first || first.type !== 'text' || !/\S/.test(first.data)) return;
+    if (!kids.some(k => k.type === 'tag' && ['input', 'select', 'textarea'].includes(k.name))) return;
+    $m(first).replaceWith('<span class="rg-lt">' + first.data.trim() + '</span> ');
+  });
+  // the step buttons of the credit application keep their function, their texts are editable
+  $m('button.rg200').attr('data-edit-label', '1');
   (LISTS[pageKey] || []).forEach(([id, sel, itemSel]) => $m(sel).each((i, box) => markList('rl-' + pageKey + '-' + id, box, itemSel)));
   FOOTER_LISTS.forEach(([id, sel, idx, itemSel]) => { const box = $m(sel).eq(idx); if (box.length) markList(id, box[0], itemSel); });
   // sections of the page (not the ones drawn from the CMS): every one can be removed / restored, and new sections can be added after it (js/rg-sections.js)
-  if (!['login', 'project', 'ref-solution'].includes(pageKey)) {
+  if (pageKey !== 'login') {
     const seen = {};
     $m('main section').each((i, sec) => {
       if ($m(sec).closest('[data-vgroup],[data-dyn]').length || $m(sec).parents('section').length) return;

@@ -183,6 +183,7 @@
   document.addEventListener('submit', function (e) {
     var form = e.target, kind = form.getAttribute('data-submit'); if (!kind) return;
     e.preventDefault();
+    if (body.classList.contains('cms-editing')) return;   // edit mode: the form texts are being edited, nothing is sent
     var first = checkFields(form);
     if (first) { first.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
     var btn = form.querySelector('button[type="submit"]'), label = btn ? btn.textContent : '', msg = form.querySelector('.form-err');
@@ -239,6 +240,7 @@
     host.innerHTML = html;
   }
   function creditNext() {
+    if (body.classList.contains('cms-editing')) { var cur = visible('[data-vgroup="cstep"]')[0]; if (cur && state.cstep < counts.cstep) { setState({ cstep: state.cstep + 1 }); window.scrollTo({ top: 0 }); } return; }   // edit mode: just look at the next step, nothing is checked or sent
     var block = visible('[data-vgroup="cstep"]')[0]; if (!block) return;
     var last = state.cstep === counts.cstep, first = checkFields(block), msg = '';
     if (first) msg = 'Please complete the highlighted required fields.';

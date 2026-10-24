@@ -160,6 +160,8 @@
   }
   function redrawSections() { $$('.rl-ctl.rs-tools,.rl-ctl.rs-add,.rl-ctl.rs-removed').forEach(function (n) { n.remove(); }); placeCustom(); applyHidden(); secControls(); refresh(); }
   document.addEventListener('rg-edit-mode', function (e) { if (e.detail && e.detail.on) enter(); else leave(); });
+  // a part drawn by js/rg-content.js (products, resources, project ...) was (re)drawn: its sections get the removed state, the added sections and the edit controls again
+  document.addEventListener('rg-redrawn', function () { if (editing()) { redrawSections(); listControls(); } else { applyHidden(); placeCustom(); } });
 
   /* ----- input: lists, custom sections */
   var markList = function (L) { dirtyLists[L.id] = 1; refresh(); };

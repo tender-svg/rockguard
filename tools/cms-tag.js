@@ -14,12 +14,12 @@
 const crypto = require('crypto');
 const cheerio = require('cheerio');
 
-const SKIP_TAGS = new Set(['script', 'style', 'noscript', 'svg', 'select', 'option', 'textarea', 'input', 'form', 'header', 'footer', 'head', 'template', 'iframe', 'canvas']);
+const SKIP_TAGS = new Set(['script', 'style', 'noscript', 'svg', 'select', 'option', 'textarea', 'input', 'header', 'footer', 'head', 'template', 'iframe', 'canvas']);
 const INLINE = new Set(['span', 'b', 'i', 'em', 'strong', 'br', 'a', 'sup', 'sub', 'small', 'u', 'abbr', 'mark', 's', 'wbr']);
 const TEXT_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'li', 'span', 'div', 'a', 'button', 'strong', 'em', 'label', 'td', 'th', 'address', 'b', 'i', 'small', 'figcaption', 'blockquote', 'dt', 'dd', 'summary']);
-const DYNAMIC_GROUPS = new Set(['prod', 'pm', 'res']);                           // filled from the CMS lists (products = solutions, project highlights, resources)
-const DYNAMIC_CLASS_BY_PAGE = { home: ['rg52'] };                                 // the product cards of the home page are filled from the CMS
-const UNTAGGED_PAGES = new Set(['login', 'project', 'ref-solution', 'ref-blog', 'ref-webinar']);                                          // 'project' = the project highlight pages (drawn from the CMS)
+const DYNAMIC_GROUPS = new Set(['prod', 'pm', 'pj']);                           // filled from the CMS lists (products = solutions, project highlights, resources)
+const DYNAMIC_CLASS_BY_PAGE = { home: ['rg52'], resources: ['rg117', 'rg119', 'rg128', 'rg130', 'rg131', 'rg132'] };   // resources: only the title, tiles, filters, count and cards are drawn from the CMS, the rest of the section is keyed                                 // the product cards of the home page are filled from the CMS
+const UNTAGGED_PAGES = new Set(['login']);                                          // 'project' = the project highlight pages (drawn from the CMS)
 
 const slug = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 const norm = s => String(s).replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
