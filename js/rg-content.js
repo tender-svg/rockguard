@@ -15,12 +15,13 @@
   var $$ = function (s, r) { return [].slice.call((r || document).querySelectorAll(s)); };
   var RGC = window.RGC || { usable: function () { return false; }, list: function () { return null; }, setList: function () { } };   // data cache (js/rg-cache.js)
   function get(path) {
-    var fresh = fetch('/api/v2/' + path, { credentials: 'include', cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    var ask = function () { return fetch('/api/v2/' + path, { credentials: 'include', cache: 'no-store' }); }, x = window.RGP && window.RGP.take ? window.RGP.take('v2/' + path) : null;
+    var fresh = (x ? x.then(function (r) { return r && r.ok ? r : ask(); }) : ask()).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
       .then(function (j) { if (Array.isArray(j)) RGC.setList(path, j); return j; });
     var cached = RGC.usable() ? RGC.list(path) : null;
     if (cached) { if (window.RGL) RGL.cachedUsed = true; fresh.catch(function () { }); return Promise.resolve(cached); }   // drawn from the cache at once; the newer data is kept for the next page
     if (window.RGL) { if (RGL.miss) RGL.miss(); RGL.hold(); }   // not cached yet: the page loader stays until the list is drawn
-    var done = function () { setTimeout(function () { if (window.RGL) RGL.release(); }, 120); };
+    var done = function () { setTimeout(function () { if (window.RGL) RGL.release(); }, 30); };
     fresh.then(done, done); return fresh;
   }
   var byOrder = function (a, b) { return (a.display_order || 0) - (b.display_order || 0); };
@@ -43,11 +44,11 @@
   /* ================================================================= products (solutions + the page elements of their product page) */
   var prods = [];   // [{ slug, title, tag, summary, card, family, order, link, lead, image, tile, features, downloads, accDesc, key }]
   var tabKey = function (p) { return p.family === 'acc' ? 'acc' : (p.family === 'hd' || p.family === 'pw') ? p.family : p.slug; };
-  function loadProducts() {
+  function loadProducts(only) {   // only = true: just the solution rows (home cards); only = a slug: the texts of that product only (its own page); nothing: all
     return get('solutions').then(function (rows) {
       var list = rows.filter(live).sort(byOrder);
       return Promise.all(list.map(function (r) {
-        return get('page-elements/' + encodeURIComponent('product-detail-' + r.slug)).catch(function () { return []; }).then(function (els) {
+        return ((only === true || (only && only !== r.slug)) ? Promise.resolve([]) : get('page-elements/' + encodeURIComponent('product-detail-' + r.slug))).catch(function () { return []; }).then(function (els) {
           var e = {}; (Array.isArray(els) ? els : []).forEach(function (x) { if (/^prod-/.test(x.element_id || '')) e[x.element_id] = x.content_value; });
           return {
             id: r.id, slug: r.slug, title: r.title || r.slug, tag: r.category || '', summary: String(r.short_description || '').replace(/\s*\[Images:\d+\]/g, '').trim(), card: r.icon_image_url || '',
@@ -124,7 +125,7 @@
   /* ================================================================= HOME: the product cards (title, tag line, summary and card photo are editable here) */
   function home() {
     var box = $('.rg52'); if (!box) return;
-    loadProducts().then(function () {
+    loadProducts(true).then(function () {
       var list = mainProds(); if (!list.length) return;
       function draw() {
         box.innerHTML = list.map(function (p) {
@@ -419,7 +420,7 @@
   function solutionRef() {
     var m0 = /product-detail-([^\/]+?)\.html$/i.exec(location.pathname), q = /[?&]slug=([^&]+)/.exec(location.search), slug = q ? decodeURIComponent(q[1]) : m0 ? decodeURIComponent(m0[1]) : '';
     var host = $('[data-dyn="sol"]'); if (!host) return;
-    loadProducts().then(function () {
+    loadProducts(slug).then(function () {
       var p = prods.filter(function (x) { return x.slug === slug; })[0];
       if (!p) { host.innerHTML = '<section class="rg80" data-sec-id="sec-product-hero"><div class="rg81"><div class="rg82"><span class="rg18"></span>RockGuard® HD | Products</div><h1 class="rg83">Product <span class="rg41">not found</span></h1><div class="rg84"><button class="rg85 rg-hover8" data-href="products.html" style="background:#f5ebdd;color:#2c2e35">All Products</button></div></div></section>'; return; }
       host.removeAttribute('style');

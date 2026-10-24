@@ -91,7 +91,7 @@
   function afterLoader(fn) {
     if (!root.classList.contains('rg-loading') && !document.getElementById('rg-loader')) { fn(); return; }
     var started = false;
-    function begin() { if (started) return; started = true; setTimeout(fn, 200); }
+    function begin() { if (started) return; started = true; setTimeout(fn, 60); }
     new MutationObserver(function (m, o) { if (!root.classList.contains('rg-loading')) { o.disconnect(); begin(); } }).observe(root, { attributes: true, attributeFilter: ['class'] });
     setTimeout(begin, 6000);
   }

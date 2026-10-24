@@ -300,43 +300,53 @@ function markStructure(html, pageKey) {
 // It uses the logo of the website (the shield + the "RockGuardHD" wordmark of the header, cut from images/rockguard-hd-logo-tm2) on the light page colours.
 // banner text / photo are held invisible from the first paint until their entrance animation starts (html.rgm-pre, lifted by js/rg-motion.js; the timeout is a safety net)
 const PRE_HOLD = '<script>(function(){var d=document.documentElement;if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("rgm-pre");setTimeout(function(){d.classList.remove("rgm-pre")},9000)})();</script>' + '\n';
+// data prefetch: the requests a page needs (its page elements, the lists it draws, the sign-in check) start in the head, while the scripts are still loading;
+// js/cms.js and js/rg-content.js take the answers from window.RGP instead of asking again (RGP.take(path) gives a copy of the response)
+const PREFETCH_LISTS = { home: ['solutions'], products: ['solutions'], resources: ['resources?all=true', 'solutions'], highlights: ['stories'], project: ['stories'], 'ref-solution': ['solutions'], 'ref-blog': ['resources?all=true', 'solutions'], 'ref-webinar': ['resources?all=true', 'solutions'] };
+const PREFETCH_EL = new Set(['products', 'resources', 'ref-blog', 'ref-webinar']);   // these pages also need the page elements of every product: asked as soon as the solution list is here
+const prefetch = pageKey => '<script>(function(){try{var P=window.RGP={},u=function(p){P[p]=fetch("/api/"+p,{credentials:"include",cache:"no-store"}).catch(function(){return null})};' +
+  'var s=((location.pathname.split("/").pop()||"").replace(/\\.html$/i,"")||"index").toLowerCase();u("v2/page-elements/"+encodeURIComponent(s));if(s!=="index")u("v2/page-elements/index");' + JSON.stringify(PREFETCH_LISTS[pageKey] || []) + '.forEach(function(l){u("v2/"+l)});u("admin/status");' +
+  (PREFETCH_EL.has(pageKey) ? 'P["v2/solutions"].then(function(r){return r&&r.ok?r.clone().json():[]}).then(function(rows){(rows||[]).forEach(function(x){if(x&&x.slug)u("v2/page-elements/product-detail-"+encodeURIComponent(x.slug))})}).catch(function(){});' : '') +
+  'P.take=function(p){var x=P[p];return x?x.then(function(r){return r?r.clone():null}):null}}catch(e){}})();</script>\n';
 const LOADER_HEAD = '<style>' +
-  '#rg-loader{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;overflow:hidden;color:#2c2e35;text-align:center;' +
-  'background:radial-gradient(ellipse at 50% 38%,#fff 0%,#faf4ec 40%,#f5ebdd 72%,#e9ddcc 100%);transition:opacity .6s ease,transform .6s ease,visibility .6s}' +
-  '#rg-loader.done{opacity:0;transform:scale(1.06);visibility:hidden;pointer-events:none}html.rg-loading{overflow:hidden}html.rg-cached #rg-loader{display:none}html.rg-cached{visibility:hidden}' +
-  '#rg-loader .rgl-mark{position:relative;width:140px;height:140px;display:grid;place-items:center}' +
-  '#rg-loader .rgl-ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#de4228,rgba(222,66,40,0) 38%,rgba(44,46,53,0) 52%,#2c2e35 100%);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));animation:rgl-spin 1.25s linear infinite}' +
-  '#rg-loader .rgl-glow{position:absolute;inset:-26px;border-radius:50%;background:radial-gradient(circle,rgba(222,66,40,.2),rgba(222,66,40,0) 68%);animation:rgl-glow 2.2s ease-in-out infinite}' +
-  '#rg-loader .rgl-mark img{position:relative;height:76px;width:auto;animation:rgl-pop 2.2s ease-in-out infinite}' +
-  '#rg-loader .rgl-logo{width:min(300px,70vw);height:auto;animation:rgl-up .8s .1s both cubic-bezier(.2,.8,.2,1)}' +
-  '#rg-loader .rgl-tag{margin-top:-6px;font:600 clamp(12px,2.6vw,14px)/1.2 "Barlow Condensed","Arial Narrow",Arial,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:#6b4a35;animation:rgl-up .8s .25s both cubic-bezier(.2,.8,.2,1)}' +
-  '#rg-loader .rgl-bar{width:min(230px,60vw);height:4px;border-radius:4px;background:#e2d2bc;overflow:hidden;position:relative;animation:rgl-up .8s .4s both cubic-bezier(.2,.8,.2,1)}' +
-  '#rg-loader .rgl-bar:after{content:"";position:absolute;top:0;bottom:0;width:44%;border-radius:4px;background:linear-gradient(90deg,transparent,#de4228 55%,#2c2e35);animation:rgl-slide 1.1s ease-in-out infinite}' +
-  /* the shield stops the rocks (The Rock Stops Here): rocks fly in from the sides and the top, hit the shield ring, spark and bounce away; shock rings spread, a diamond mesh (the RockGuard HD mesh) drifts behind */
-  '#rg-loader .rgl-grid{position:absolute;inset:-60px;background:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2748%27 height=%2748%27%3E%3Cpath d=%27M0 24L24 0L48 24L24 48Z%27 fill=%27none%27 stroke=%27%232c2e35%27 stroke-width=%271.2%27/%3E%3C/svg%3E") 0 0/48px 48px;opacity:.1;-webkit-mask:radial-gradient(circle at 50% 42%,#000 0,rgba(0,0,0,.55) 30%,transparent 68%);mask:radial-gradient(circle at 50% 42%,#000 0,rgba(0,0,0,.55) 30%,transparent 68%);animation:rgl-grid 14s linear infinite}' +
-  '#rg-loader .rgl-rocks{position:absolute;left:50%;top:50%;width:0;height:0}' +
-  '#rg-loader .rgl-rocks i{position:absolute;left:-7px;top:-6px;width:14px;height:12px;background:linear-gradient(135deg,#a2704c,#5b3b27);clip-path:polygon(12% 20%,48% 0,88% 14%,100% 56%,76% 100%,28% 92%,0 58%);opacity:0;animation:rgl-rock 2.6s cubic-bezier(.45,0,.75,.55) var(--dl) infinite}' +
-  '#rg-loader .rgl-rocks i:nth-child(2n){width:10px;height:9px;left:-5px;top:-4px}#rg-loader .rgl-rocks i:nth-child(3n){width:17px;height:14px;left:-8px;top:-7px}' +
-  '#rg-loader .rgl-rocks i:after{content:"";position:absolute;left:-10px;top:-10px;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle,#ffd3c6 0%,#ff6a4a 35%,rgba(222,66,40,0) 70%);opacity:0;animation:rgl-spark 2.6s ease-out var(--dl) infinite}' +
-  '#rg-loader .rgl-pulse{position:absolute;inset:6px;border-radius:50%;border:2px solid rgba(222,66,40,.55);opacity:0;animation:rgl-shock 2.6s ease-out infinite}#rg-loader .rgl-pulse.b{animation-delay:1.3s}' +
-  '@keyframes rgl-grid{to{background-position:48px 48px}}' +
-  '@keyframes rgl-rock{0%{transform:rotate(var(--a)) translateX(330px) rotate(0);opacity:0}10%{opacity:1}46%{transform:rotate(var(--a)) translateX(84px) rotate(220deg);opacity:1}52%{transform:rotate(var(--a)) translateX(78px) rotate(250deg);opacity:1}72%{transform:rotate(var(--a)) translateX(150px) rotate(430deg);opacity:.85}100%{transform:rotate(var(--a)) translateX(250px) rotate(600deg);opacity:0}}' +
-  '@keyframes rgl-spark{0%,44%{opacity:0;transform:scale(.3)}50%{opacity:1;transform:scale(1)}64%,100%{opacity:0;transform:scale(1.5)}}' +
-  '@keyframes rgl-shock{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.7)}}' +
-  '@media (prefers-reduced-motion:reduce){#rg-loader .rgl-rocks,#rg-loader .rgl-pulse,#rg-loader .rgl-grid{display:none}}' +
-  '@keyframes rgl-spin{to{transform:rotate(360deg)}}@keyframes rgl-slide{0%{left:-48%}100%{left:104%}}' +
-  '@keyframes rgl-pop{0%,100%{transform:scale(1)}50%{transform:scale(.93)}}@keyframes rgl-glow{0%,100%{opacity:.55;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}@keyframes rgl-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}' +
-  '@media (prefers-reduced-motion:reduce){#rg-loader *,#rg-loader:before{animation:none!important}#rg-loader .rgl-bar:after{left:0;width:100%}}' +
+  '#rg-loader{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;overflow:hidden;color:#2c2e35;text-align:center;' +
+  'background:radial-gradient(ellipse at 50% 38%,#fff 0%,#faf4ec 46%,#f1e6d6 100%);transition:opacity .35s ease,transform .35s ease,visibility .35s}' +
+  '#rg-loader.done{opacity:0;transform:scale(1.04);visibility:hidden;pointer-events:none}html.rg-loading{overflow:hidden}html.rg-cached #rg-loader{display:none}html.rg-cached{visibility:hidden}' +
+  /* faint diamond mesh (the RockGuard HD mesh) that drifts behind, strongest around the logo */
+  '#rg-loader .rgl-grid{position:absolute;inset:-60px;background:url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2756%27 height=%2756%27%3E%3Cpath d=%27M0 28L28 0L56 28L28 56Z%27 fill=%27none%27 stroke=%27%232c2e35%27 stroke-width=%271%27/%3E%3C/svg%3E") 0 0/56px 56px;opacity:.085;-webkit-mask:radial-gradient(circle at 50% 38%,#000 0,rgba(0,0,0,.5) 34%,transparent 70%);mask:radial-gradient(circle at 50% 38%,#000 0,rgba(0,0,0,.5) 34%,transparent 70%);animation:rgl-grid 12s linear infinite}' +
+  /* the mark: a glass disc with the shield, a progress arc around it, a slowly turning tick ring and radar pulses */
+  '#rg-loader .rgl-mark{position:relative;width:156px;height:156px;display:grid;place-items:center}' +
+  '#rg-loader .rgl-disc{position:absolute;inset:16px;border-radius:50%;background:radial-gradient(circle at 34% 28%,#fff 0%,#faf4ec 62%,#efe3d1 100%);box-shadow:0 14px 40px rgba(44,46,53,.17),inset 0 0 0 1px rgba(44,46,53,.06)}' +
+  '#rg-loader .rgl-arc{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);overflow:visible}' +
+  '#rg-loader .rgl-arc .tr{fill:none;stroke:#e6d9c7;stroke-width:3}#rg-loader .rgl-arc .pr{fill:none;stroke:url(#rgl-g);stroke-width:4;stroke-linecap:round;stroke-dasharray:452;stroke-dashoffset:calc(452px * (1 - var(--p,0)));filter:drop-shadow(0 0 5px rgba(222,66,40,.55))}' +
+  '#rg-loader .rgl-ticks{position:absolute;inset:-14px;width:calc(100% + 28px);height:calc(100% + 28px);animation:rgl-turn 16s linear infinite reverse}#rg-loader .rgl-ticks circle{fill:none;stroke:rgba(44,46,53,.4);stroke-width:2;stroke-dasharray:1.6 8.4}' +
+  '#rg-loader .rgl-wave{position:absolute;inset:14px;border-radius:50%;border:1.5px solid rgba(222,66,40,.45);opacity:0;animation:rgl-wave 2.2s ease-out infinite}#rg-loader .rgl-wave.b{animation-delay:.73s}#rg-loader .rgl-wave.c{animation-delay:1.46s}' +
+  '#rg-loader .rgl-mark img{position:relative;height:74px;width:auto;filter:drop-shadow(0 4px 8px rgba(44,46,53,.25));animation:rgl-pop 1.8s ease-in-out infinite}' +
+  '#rg-loader .rgl-logo{width:min(290px,68vw);height:auto;margin-top:6px;animation:rgl-up .45s 0s both cubic-bezier(.2,.8,.2,1)}' +
+  '#rg-loader .rgl-tag{margin-top:-4px;font:600 clamp(12px,2.6vw,14px)/1.2 "Barlow Condensed","Arial Narrow",Arial,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:#6b4a35;animation:rgl-up .45s .06s both cubic-bezier(.2,.8,.2,1)}' +
+  /* thin progress line along the very bottom */
+  '#rg-loader .rgl-line{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(44,46,53,.08)}#rg-loader .rgl-line i{display:block;height:100%;transform-origin:0 50%;transform:scaleX(var(--p,0));background:linear-gradient(90deg,#de4228,#ff6a4a 70%,#2c2e35)}' +
+  '@keyframes rgl-grid{to{background-position:56px 56px}}@keyframes rgl-turn{to{transform:rotate(360deg)}}@keyframes rgl-wave{0%{opacity:.7;transform:scale(1)}100%{opacity:0;transform:scale(2.5)}}' +
+  '@keyframes rgl-pop{0%,100%{transform:scale(1)}50%{transform:scale(.94)}}@keyframes rgl-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}' +
+  '@media (prefers-reduced-motion:reduce){#rg-loader .rgl-grid,#rg-loader .rgl-ticks,#rg-loader .rgl-wave,#rg-loader .rgl-mark img{animation:none!important}#rg-loader .rgl-wave{display:none}}' +
   '</style>\n' +
   '<noscript><style>#rg-loader{display:none}html.rg-loading{overflow:auto}</style></noscript>\n' +
-  '<script>(function(){var d=document,n=0,ready=false,hid=false,t0=Date.now(),c=false;d.documentElement.classList.add("rg-loading");' +
+  '<script>(function(){var d=document,n=0,ready=false,hid=false,fin=false,t0=Date.now(),c=false,P=0,S=0;d.documentElement.classList.add("rg-loading");' +
   'try{var nv=performance.getEntriesByType("navigation")[0];if(nv&&nv.type==="reload"){localStorage.removeItem("rg-cache-v1");localStorage.removeItem("rg-cache-t")}}catch(e){}try{var t=+localStorage.getItem("rg-cache-t");c=!!(t&&Date.now()-t<864e5&&!localStorage.getItem("rg-admin"))}catch(e){}if(c)d.documentElement.classList.add("rg-cached");' +
-  'function hide(){if(hid)return;hid=true;var e=d.getElementById("rg-loader");d.documentElement.classList.remove("rg-loading");d.documentElement.classList.remove("rg-cached");if(e){e.classList.add("done");setTimeout(function(){if(e.parentNode)e.parentNode.removeChild(e)},600)}}' +
-  'function check(){if(ready&&n<=0)setTimeout(function(){if(n<=0)hide()},Math.max(30,(RGL.cached?0:380)-(Date.now()-t0)))}' +
+  /* progress: eases towards 94 % while the data comes in, jumps to 100 % when everything is drawn */
+  'function frame(){var e=d.getElementById("rg-loader");if(e){P=hid?1:.94*(1-Math.exp(-(Date.now()-t0)/900));S+=(P-S)*.22;if(P-S<.004)S=P;e.style.setProperty("--p",S.toFixed(3));}if(!fin)requestAnimationFrame(frame)}requestAnimationFrame(frame);' +
+  'function finish(){if(fin)return;fin=true;var e=d.getElementById("rg-loader");d.documentElement.classList.remove("rg-loading");d.documentElement.classList.remove("rg-cached");if(e){e.classList.add("done");setTimeout(function(){if(e.parentNode)e.parentNode.removeChild(e)},370)}}' +
+  'function hide(){if(hid)return;hid=true;setTimeout(finish,c?0:230)}' +
+  'function check(){if(ready&&n<=0)setTimeout(function(){if(n<=0)hide()},Math.max(30,(RGL.cached?0:160)-(Date.now()-t0)))}' +
   'window.RGL={cached:c,cachedUsed:false,hold:function(){n++},release:function(){n=Math.max(0,n-1);check()},miss:function(){RGL.cached=false;d.documentElement.classList.remove("rg-cached")}};' +
-  'd.addEventListener("DOMContentLoaded",function(){ready=true;check()});setTimeout(hide,c?2500:12000)})();</script>\n';
-const LOADER_BODY = '<div id="rg-loader" role="status" aria-live="polite" aria-label="Loading"><div class="rgl-grid"></div><div class="rgl-mark"><span class="rgl-pulse"></span><span class="rgl-pulse b"></span><span class="rgl-rocks"><i style="--a:195deg;--dl:0s"></i><i style="--a:215deg;--dl:0.95s"></i><i style="--a:235deg;--dl:0.35s"></i><i style="--a:255deg;--dl:1.55s"></i><i style="--a:285deg;--dl:0.65s"></i><i style="--a:305deg;--dl:1.25s"></i><i style="--a:325deg;--dl:1.85s"></i><i style="--a:345deg;--dl:0.2s"></i></span><span class="rgl-glow"></span><span class="rgl-ring"></span><img src="images/logo-shield-sm.webp" alt="" width="62" height="76"></div>' +
-  '<img class="rgl-logo" src="images/logo-wordmark-sm.webp" alt="RockGuard HD Pipeline Protection Mesh" width="300" height="66"><div class="rgl-tag">The Rock Stops Here.™</div><div class="rgl-bar"></div></div>\n';
+  'd.addEventListener("DOMContentLoaded",function(){ready=true;check()});setTimeout(hide,c?2500:2200)})();</script>\n';
+const LOADER_BODY = '<div id="rg-loader" role="status" aria-live="polite" aria-label="Loading"><div class="rgl-grid"></div><div class="rgl-mark"><span class="rgl-wave"></span><span class="rgl-wave b"></span><span class="rgl-wave c"></span>' +
+  '<svg class="rgl-ticks" viewBox="0 0 184 184" aria-hidden="true"><circle cx="92" cy="92" r="89"/></svg><span class="rgl-disc"></span>' +
+  '<svg class="rgl-arc" viewBox="0 0 156 156" aria-hidden="true"><defs><linearGradient id="rgl-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#de4228"/><stop offset="1" stop-color="#2c2e35"/></linearGradient></defs><circle class="tr" cx="78" cy="78" r="72"/><circle class="pr" cx="78" cy="78" r="72"/></svg>' +
+  '<img src="images/logo-shield-sm.webp" alt="" width="60" height="74"></div>' +
+  '<img class="rgl-logo" src="images/logo-wordmark-sm.webp" alt="RockGuard HD Pipeline Protection Mesh" width="290" height="64"><div class="rgl-tag">The Rock Stops Here.™</div>' +
+  '<div class="rgl-line"><i></i></div></div>\n';
+
 
 // background photo of the dark banner at the top of these pages (a normal CMS image: replace it with "Change image" in edit mode); the Products banner is drawn by js/rg-content.js
 const HERO = { resources: 'mainpic_mdfy', highlights: 'IMG_0097_crop', contact: 'RockGuard-HD-gallery-6', credit: 'RockGuard-HD-gallery-3', lunch: 'RockGuard-HD-gallery-11', project: 'RockGuard-HD-gallery-10' };
@@ -356,7 +366,7 @@ function page(file, title, desc, bodyHtml, defaults, bodyClass) {
     '<title>' + esc(title) + '</title>\n<link rel="icon" type="image/png" sizes="64x64" href="images/favicon.png">\n<link rel="apple-touch-icon" href="images/apple-touch-icon.png">\n<meta name="description" content="' + escAttr(desc) + '">\n' +
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
     '<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">\n' +
-    LOADER_HEAD + PRE_HOLD + '<link rel="stylesheet" href="css/styles.css">\n<link rel="stylesheet" href="css/site.css">\n<link rel="stylesheet" href="css/rg-motion.css">\n<link rel="stylesheet" href="css/cms.css">\n</head>\n' +
+    LOADER_HEAD + prefetch(bodyClass) + PRE_HOLD + '<link rel="stylesheet" href="css/styles.css">\n<link rel="stylesheet" href="css/site.css">\n<link rel="stylesheet" href="css/rg-motion.css">\n<link rel="stylesheet" href="css/cms.css">\n</head>\n' +
     '<body data-page="' + escAttr(bodyClass) + '" data-state=\'' + JSON.stringify(defaults) + '\'>\n' + LOADER_BODY + bodyHtml + '\n' +
     (['contact', 'lunch', 'credit'].includes(bodyClass) ? '<script src="js/geo.js" defer></script>\n' : '') + '<script src="js/site.js" defer></script>\n<script src="js/rg-cache.js" defer></script>\n<script src="js/rg-motion.js" defer></script>\n<script src="js/rg-dialog.js" defer></script>\n<script src="js/rg-edit.js" defer></script>\n<script src="js/rg-content.js" defer></script>\n<script src="js/cms.js" defer></script>\n<script src="js/rg-sections.js" defer></script>\n<script src="js/rg-toolbar.js" defer></script>\n</body>\n</html>\n';
 }

@@ -59,7 +59,9 @@
     document.dispatchEvent(new CustomEvent('rg-applied'));
   }
   var RGC = window.RGC || { usable: function () { return false; }, page: function () { return null; }, setPage: function () { }, admin: function () { }, clear: function () { } };   // data cache (js/rg-cache.js)
-  function getRows(page) { return fetch('/api/v2/page-elements/' + encodeURIComponent(page), { credentials: 'include', cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); }
+  var pre = function (p) { return window.RGP && window.RGP.take ? window.RGP.take(p) : null; };   // answers requested by the head script (tools/build-pages.js prefetch)
+  var viaPre = function (p, url) { var x = pre(p); var ask = function () { return fetch(url, { credentials: 'include', cache: 'no-store' }); }; return x ? x.then(function (r) { return r && r.ok ? r : ask(); }) : ask(); };
+  function getRows(page) { return viaPre('v2/page-elements/' + encodeURIComponent(page), '/api/v2/page-elements/' + encodeURIComponent(page)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); }
   // the texts of this page + the shared ones (header / footer links, top bar) that are stored with the home page
   function rowsOf(a, b) { return (Array.isArray(a) ? a : []).concat(Array.isArray(b) ? b.filter(function (r) { return isGlobalKey(r.element_id || ''); }) : []); }
   function loadSaved() {
@@ -278,7 +280,7 @@
   var hold = function () { if (window.RGL) RGL.hold(); }, release = function () { if (window.RGL) RGL.release(); };   // the page loader stays until the CMS texts are in
   hold(); var loaded = loadSaved(); loaded.then(release, release);
   var heldStatus = !(window.RGL && RGL.cached); if (heldStatus) hold();   // with the cache nothing waits for the sign-in check
-  fetch('/api/admin/status', { credentials: 'include', cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : { loggedIn: false }; }).catch(function () { return { loggedIn: false }; }).then(function (s) {
+  viaPre('admin/status', '/api/admin/status').then(function (r) { return r.ok ? r.json() : { loggedIn: false }; }).catch(function () { return { loggedIn: false }; }).then(function (s) {
     if (heldStatus) release();
     if (!s || !s.loggedIn) { RGC.admin(false); return; }
     RGC.admin(true);   // a signed-in admin always works on fresh data
