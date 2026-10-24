@@ -246,7 +246,7 @@ function page(file, title, desc, bodyHtml, defaults, bodyClass) {
     '<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">\n' +
     '<link rel="stylesheet" href="css/styles.css">\n<link rel="stylesheet" href="css/site.css">\n<link rel="stylesheet" href="css/cms.css">\n</head>\n' +
     '<body data-page="' + escAttr(bodyClass) + '" data-state=\'' + JSON.stringify(defaults) + '\'>\n' + bodyHtml + '\n' +
-    (bodyClass === 'contact' ? '<script src="js/geo.js" defer></script>\n' : '') + '<script src="js/site.js" defer></script>\n<script src="js/rg-content.js" defer></script>\n<script src="js/cms.js" defer></script>\n<script src="js/rg-toolbar.js" defer></script>\n</body>\n</html>\n';
+    (bodyClass === 'contact' ? '<script src="js/geo.js" defer></script>\n' : '') + '<script src="js/site.js" defer></script>\n<script src="js/rg-dialog.js" defer></script>\n<script src="js/rg-edit.js" defer></script>\n<script src="js/rg-content.js" defer></script>\n<script src="js/cms.js" defer></script>\n<script src="js/rg-toolbar.js" defer></script>\n</body>\n</html>\n';
 }
 
 // ------------------------------------------------------------------ write everything
@@ -262,6 +262,15 @@ for (const [key, p] of Object.entries(PAGES)) {
   const a = assemble('highlights', { hlMode: 'detail', hl: 0 }, GROUPS.project(0));
   const $t = parse(a.html); $t('[data-vgroup="pj"]').html('').removeAttr('hidden').attr('style', 'min-height:60vh');
   write('project-highlight.html', page('project-highlight.html', 'Project Highlight | RockGuard® HD Pipeline Protection', 'RockGuard® HD and PipeWeights project highlight.', $t('#__root').html(), a.defaults, 'project'));
+}
+
+// solution-reference.html: the template of every solution made in the Dashboard (/product-detail-<slug>.html is rewritten to it, see vercel.json); js/rg-content.js (solutionRef) draws the solution of the slug
+{
+  const a = assemble('products', { product: 'hd' }, []);
+  const $t = parse(a.html);
+  $t('main > section.rg80, main > section.rg86').remove();
+  $t('main > section.rg31').before('<div data-dyn="sol" style="min-height:60vh"></div>');
+  write('solution-reference.html', page('solution-reference.html', 'Product | RockGuard® HD Pipeline Protection', 'RockGuard® pipeline protection product.', $t('#__root').html(), a.defaults, 'ref-solution'));
 }
 
 // js/geo.js: the country / state lists of the contact form (the component kept them in its script)

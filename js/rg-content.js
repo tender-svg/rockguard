@@ -211,5 +211,72 @@
     }).catch(fail);
   }
 
-  if (page === 'home') home(); else if (page === 'products') products(); else if (page === 'resources') resources(); else if (page === 'highlights') highlights(); else if (page === 'project') project();
+  /* ================================================================= ONE SOLUTION (product-detail-<slug>.html / solution-reference.html?slug=) - the template of every solution made in the Dashboard */
+  var editing = function () { return !!(window.RGCMS && window.RGCMS.editing); };
+  function solutionRef() {
+    var m0 = /product-detail-([^\/]+?)\.html$/i.exec(location.pathname), q = /[?&]slug=([^&]+)/.exec(location.search), slug = q ? decodeURIComponent(q[1]) : m0 ? decodeURIComponent(m0[1]) : '';
+    var host = $('[data-dyn="sol"]'); if (!host) return;
+    var RGE = window.RGE, refresh = function () { if (window.RGCMS && window.RGCMS.refresh) window.RGCMS.refresh(); };
+    loadProducts().then(function () {
+      var p = prods.filter(function (x) { return x.slug === slug; })[0];
+      if (!p) { host.innerHTML = '<section class="rg80"><div class="rg81"><div class="rg82"><span class="rg18"></span>RockGuard® HD | Products</div><h1 class="rg83">Product <span class="rg41">not found</span></h1><div class="rg84"><button class="rg85 rg-hover8" data-href="products.html" style="background:#f5ebdd;color:#2c2e35">All Products</button></div></div></section>'; return; }
+      host.removeAttribute('style');
+      var m = { id: p.id, title: p.title, tag: p.tag, summary: p.summary, lead: p.lead, image: p.image, features: p.features.map(function (f) { return [f[0] || '', f[1] || '']; }), downloads: p.downloads.map(function (d) { return [d[0] || '', d[1] || '', d[2] || '', d[3] || '']; }) };
+      var dirty = {}, spage = 'product-detail-' + p.slug;
+      var ce = function (attr) { return editing() ? ' contenteditable="true" spellcheck="false" ' + attr : ''; };
+      var btn = function (cls, act, label, extra) { return editing() ? '<button type="button" class="' + cls + '" data-sa="' + act + '"' + (extra || '') + '>' + label + '</button>' : ''; };
+      function draw(focus) {
+        document.title = m.title + ' | Products | RockGuard® HD';
+        var lead = m.lead || m.summary, ds = m.downloads[0] ? m.downloads[0][1] : '';
+        var feats = m.features.map(function (f, i) {
+          return '<div class="rg107 rg-hover10"><div class="rg108"><span class="rg109">' + pad2(i + 1) + '</span><span class="rg110"></span></div><h4 class="rg111"' + ce('data-sf="f" data-i="' + i + '" data-j="0"') + '>' + esc(f[0]) + '</h4>' +
+            (f[1] || editing() ? '<p class="rg112"' + ce('data-sf="f" data-i="' + i + '" data-j="1"') + '>' + esc(f[1]) + '</p>' : '') + (editing() ? '<button type="button" class="app-x" data-sa="rmf" data-i="' + i + '" title="Remove this feature" style="position:static;margin-top:10px">×</button>' : '') + '</div>';
+        }).join('');
+        var dls = m.downloads.map(function (d, i) {
+          var ext = d[3] || extOf(d[1]), tagOpen = editing() ? 'div' : 'a href="' + esc(d[1] || '#') + '" target="_blank" rel="noopener"', tagClose = editing() ? 'div' : 'a';
+          return '<' + tagOpen + ' class="rg133 rg-hover12"><div class="rg134"><span class="rg135"' + ce('data-sf="d" data-i="' + i + '" data-j="2"') + '>' + esc(d[2]) + '</span><span class="rg136">' + esc(ext) + '</span></div><h4 class="rg137"' + ce('data-sf="d" data-i="' + i + '" data-j="0"') + '>' + esc(d[0]) + '</h4><div class="rg138"><span class="rg139">' + esc(m.title) + '</span><span class="rg140">↓</span></div>' +
+            (editing() ? '<div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="dyn-add" data-sa="dlink" data-i="' + i + '">Link / file</button><button type="button" class="app-x" data-sa="rmd" data-i="' + i + '" title="Remove this download" style="position:static">×</button></div>' : '') + '</' + tagClose + '>';
+        }).join('');
+        host.innerHTML =
+          '<section class="rg80"><div class="rg81"><div class="rg82"><span class="rg18"></span>RockGuard® HD | Products</div><h1 class="rg83"' + ce('data-sf="title"') + '>' + esc(m.title) + '</h1><div class="rg84"><button class="rg85 rg-hover8" data-href="products.html" style="background:rgba(255,255,255,.06);color:#d6c6b2">← All Products</button></div></div></section>' +
+          '<section class="rg86"><div class="rg87"><div class="rg88" style="position:relative">' + img(m.image, m.title) + btn('dyn-photo', 'photo', '📷 Change photo') + '</div><div><div class="rg92"' + ce('data-sf="tag"') + '>' + esc(m.tag) + '</div><h2 class="rg93">' + esc(m.title) + '</h2>' +
+          (lead || editing() ? '<p class="rg94"' + ce('data-sf="lead"') + '>' + esc(m.lead) + '</p>' : '') + (editing() && !m.lead ? '<p class="rg94" style="opacity:.6">(Empty: the summary below is shown instead.)</p>' : '') +
+          '<div class="rg98"><button class="rg99 rg-hover9" data-href="contact.html">Get a Quote</button>' + (ds ? '<a class="rg100 rg-hover7" href="' + esc(ds) + '" target="_blank" rel="noopener">Data Sheet ↓</a>' : '') + '</div>' +
+          (editing() ? '<p class="rg206" style="margin-top:18px"><b>Summary</b> (shown on the home card and the Products tab):</p><p class="rg94"' + ce('data-sf="summary"') + '>' + esc(m.summary) + '</p>' : '') + '</div></div></section>' +
+          (m.features.length || editing() ? '<section class="rg80"><div class="rg101"><div class="rg102"><div><div class="rg103"><span class="rg18"></span>' + esc(m.title) + '</div><h3 class="rg104">Features &amp; <span class="rg41">Benefits</span></h3></div><div class="rg105">' + pad2(m.features.length) + ' Key Advantages</div></div><div class="rg106">' + feats + '</div>' + (editing() ? '<div style="margin-top:20px">' + btn('dyn-add', 'addf', '＋ Add feature') + '</div>' : '') + '</div></section>' : '') +
+          (m.downloads.length || editing() ? '<section class="rg114"><div class="rg115"><div><div class="rg116">Downloads</div><h2 class="rg117">' + esc(m.title) + ' Resources</h2></div></div><div class="rg132">' + dls + '</div>' + (editing() ? '<div style="margin-top:20px">' + btn('dyn-add', 'addd', '＋ Add download') + '</div>' : '') + '</section>' : '');
+        if (focus) { var f = $(focus, host); if (f) { f.focus(); try { var r = document.createRange(); r.selectNodeContents(f); r.collapse(false); var s = getSelection(); s.removeAllRanges(); s.addRange(r); } catch (e) { /* ignore */ } } }
+      }
+      var mark = function (k) { dirty[k] = 1; refresh(); };
+      host.addEventListener('input', function (e) {
+        if (!editing()) return; var t = e.target.closest && e.target.closest('[data-sf]'); if (!t) return; var f = t.getAttribute('data-sf'), v = t.textContent.split(String.fromCharCode(160)).join(' '), i = parseInt(t.getAttribute('data-i'), 10), j = parseInt(t.getAttribute('data-j'), 10);
+        if (f === 'f') { m.features[i][j] = v; mark('features'); } else if (f === 'd') { m.downloads[i][j] = v; mark('downloads'); } else { m[f] = v; mark(f === 'title' || f === 'tag' || f === 'summary' ? 'row' : f); }
+      });
+      host.addEventListener('keydown', function (e) { if (editing() && e.key === 'Enter' && e.target.closest && e.target.closest('[data-sf][contenteditable]')) e.preventDefault(); });
+      host.addEventListener('paste', function (e) { var t = e.target.closest && e.target.closest('[data-sf][contenteditable]'); if (!editing() || !t) return; e.preventDefault(); document.execCommand('insertText', false, (e.clipboardData || window.clipboardData).getData('text/plain').replace(/\s*\n\s*/g, ' ')); });
+      host.addEventListener('click', function (e) {
+        var b = e.target.closest && e.target.closest('[data-sa]'); if (!b || !editing()) return; e.preventDefault(); e.stopPropagation();
+        var a = b.getAttribute('data-sa'), i = parseInt(b.getAttribute('data-i'), 10);
+        if (a === 'addf') { m.features.push(['', '']); mark('features'); draw('[data-sf="f"][data-i="' + (m.features.length - 1) + '"][data-j="0"]'); }
+        else if (a === 'rmf') { m.features.splice(i, 1); mark('features'); draw(); }
+        else if (a === 'addd') { m.downloads.push(['New download', '', 'Data Sheet', '']); mark('downloads'); draw(); }
+        else if (a === 'rmd') { m.downloads.splice(i, 1); mark('downloads'); draw(); }
+        else if (a === 'dlink') { RGE.fileLink({ title: 'Download link', url: m.downloads[i][1], accept: '.pdf,.docx,application/pdf', folder: 'resources', hint: 'The file this download opens: paste a link or upload a PDF / Word file.' }).then(function (r) { if (!r) return; m.downloads[i][1] = r.clear ? '' : r.url; m.downloads[i][3] = ''; mark('downloads'); draw(); }); }
+        else if (a === 'photo') { RGE.pickFile('image/*').then(function (file) { if (!file) return; b.textContent = 'Uploading…'; return RGE.upload(file, 'solutions').then(function (u) { m.image = u; mark('image'); draw(); }); }).catch(function (err) { RGDialog.alert(err.message, { title: 'Upload failed', danger: true }); draw(); }); }
+      });
+      function save() {
+        var keys = Object.keys(dirty), log = {}, pr = Promise.resolve(), n = 0;
+        if (dirty.row) pr = pr.then(function () { return RGE.api('PATCH', 'solutions/' + m.id, { title: m.title, category: m.tag, short_description: m.summary }); }).then(function () { n++; });
+        var el = { lead: ['prod-lead', 'text', m.lead], image: ['prod-image', 'image', m.image], features: ['prod-features', 'text', JSON.stringify(m.features.filter(function (f) { return f[0].trim() || f[1].trim(); }))], downloads: ['prod-downloads', 'text', JSON.stringify(m.downloads.filter(function (d) { return d[0].trim() || d[1].trim(); }))] };
+        Object.keys(el).forEach(function (k) { if (!dirty[k]) return; pr = pr.then(function () { return RGE.api('POST', 'page-elements', { page_slug: spage, element_id: el[k][0], content_type: el[k][1], content_value: el[k][2] }); }).then(function () { n++; }); });
+        keys.forEach(function (k) { log[m.title + ' · ' + (k === 'row' ? 'title / tag / summary' : k)] = 'Updated'; });
+        return pr.then(function () { return RGE.pending ? null : RGE.history('solutions', log); }).then(function () { dirty = {}; refresh(); return n; });
+      }
+      if (window.RGCMS && window.RGCMS.registerHook) window.RGCMS.registerHook('solution', { count: function () { return Object.keys(dirty).length; }, run: save });
+      document.addEventListener('rg-edit-mode', function () { draw(); });
+      draw();
+    }).catch(fail);
+  }
+
+  if (page === 'home') home(); else if (page === 'products') products(); else if (page === 'resources') resources(); else if (page === 'highlights') highlights(); else if (page === 'project') project(); else if (page === 'ref-solution') solutionRef();
 })();
