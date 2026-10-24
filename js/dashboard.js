@@ -159,13 +159,16 @@
         { name: 'title', label: 'Title', type: 'text', req: true, full: true },
         { name: 'document_type', label: 'Type', type: 'select', options: RES_TYPES.map(function (x) { return [x, x]; }), help: 'Sizing Chart, Installation, Brochure, Specification and Safety show under Downloads; Data Sheet under Technical Datasheets.' },
         { name: 'product', label: 'Product', type: 'select', legacy: 'All products / other', options: function () { return productOptions('all', 'All products / other'); } },
-        { name: 'file_url', label: 'File (PDF or other document) or link', type: 'file', folder: 'resources', full: true },
+        { name: 'description', label: 'Short description', type: 'textarea', full: true, help: 'Optional. Kept with the resource (not shown on its card).' },
+        { name: 'body', label: 'Text of its own page', type: 'textarea', full: true, rows: 12, help: 'Only for a Blog Post or a Webinar: the text of its page (blog-<title>.html / webinar-<title>.html). A blank line starts a new paragraph; a short first line of a block is a sub-heading; lines starting with • or - are a list (shown as numbered cards); a line [image: /images/photo.webp | caption] puts a picture there (or use "Insert image" on the page itself).' },
+        { name: 'file_url', label: 'File (PDF or other document) or link', type: 'file', folder: 'resources', full: true, help: 'A Webinar page uses it for its "Watch / Register" button.' },
+        { name: 'thumbnail_url', label: 'Cover photo (Blog Post / Webinar page)', type: 'image', folder: 'resources', full: true },
         { name: 'is_active', label: 'Show on the website', type: 'checkbox' },
       ],
-      columns: [['Resource', function (r) { return '<div class="db-title">' + esc(r.title) + '</div><div class="db-sub">' + esc(clipText(r.file_url, 70)) + '</div>'; }], ['Type', function (r) { return esc(r.document_type || ''); }], ['Product', function (r) { return esc(productName(parseProduct(r.description).product)); }], ['Status', function (r) { return pill(r.is_active !== false); }]],
-      toForm: function (r) { var p = parseProduct(r.description); return { title: r.title, document_type: r.document_type || 'Data Sheet', product: normProd(p.product), file_url: r.file_url || '', is_active: r.is_active !== false }; },
+      columns: [['Resource', function (r) { return '<div class="db-title">' + esc(r.title) + '</div><div class="db-sub">' + esc(clipText(r.file_url, 70)) + '</div>'; }], ['Type', function (r) { return esc(r.document_type || ''); }], ['Page', function (r) { var k = r.document_type === 'Blog Post' ? 'blog' : r.document_type === 'Webinar' ? 'webinar' : ''; return k ? '<span class="db-sub">' + k + '-' + esc(slugify(r.title)) + '.html</span>' : '<span class="db-sub">—</span>'; }], ['Product', function (r) { return esc(productName(parseProduct(r.description).product)); }], ['Status', function (r) { return pill(r.is_active !== false); }]],
+      toForm: function (r) { var p = parseProduct(r.description), sp = splitDesc(p.text, r.document_type); return { title: r.title, document_type: r.document_type || 'Data Sheet', product: normProd(p.product), description: sp.desc, body: sp.body, file_url: r.file_url || '', thumbnail_url: r.thumbnail_url || '', is_active: r.is_active !== false }; },
       toBody: function (v, row) {
-        var b = { title: v.title, document_type: v.document_type, description: '[product:' + v.product + '] ' + (row ? parseProduct(row.description).text : ''), file_url: v.file_url, is_active: v.is_active };
+        var b = { title: v.title, document_type: v.document_type, description: '[product:' + v.product + '] ' + v.description + (v.body && isArticle(v.document_type) ? '\n\n[page]\n\n' + v.body : ''), file_url: v.file_url, thumbnail_url: v.thumbnail_url, is_active: v.is_active };
         if (!row) b.published_date = new Date().toISOString();
         return b;
       },

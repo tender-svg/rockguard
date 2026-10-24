@@ -15,6 +15,14 @@
     {
       "source": "/product-detail-:slug.html",
       "destination": "/solution-reference.html"
+    },
+    {
+      "source": "/blog-:slug.html",
+      "destination": "/blog-details.html"
+    },
+    {
+      "source": "/webinar-:slug.html",
+      "destination": "/webinar-details.html"
     }
   ]
 }

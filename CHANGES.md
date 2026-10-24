@@ -36,3 +36,15 @@
 - **Resources**: title, type (Data Sheet, Sizing Chart, Installation, Brochure, Specification, Safety, Technical Note, Webinar, Video, Blog Post), product (= a solution), file or link, show / hide; type tabs like the Resources page + a product filter with counts; "Add" starts with the selected tab's type and product.
 - **Change Password**, **Email Configuration** (SMTP + CC rows per form: Contact, Lunch & Learn, Credit Application + send a test mail), **Change History** (dashboard saves, live-editor saves, list / section edits), **Team & Access** (add admin / editor, edit, reset password, remove) and **Pending Approvals** (an editor's saves wait there; approve / reject), same backend endpoints as the other CMS sites. Every dashboard save is written to the change history.
 - Blog / Webinar pages of their own do not exist on this website (their resources open the file / link), so the template pages for them were not made.
+
+## Reference (template) pages: blog, webinar, project highlight, solution
+A new item made in the Dashboard gets its own page at once, drawn from the template of its kind (`vercel.json` rewrites, emulated by `tools/dev-server.js`; `?slug=` works too; a real file always wins):
+| Dashboard item | Address | Template |
+|---|---|---|
+| Solution | `/product-detail-<slug>.html` | `solution-reference.html` |
+| Project Highlight | `/project-highlight-<slug>.html` | `project-highlight.html` |
+| Resource, type Blog Post | `/blog-<title>.html` | `blog-details.html` |
+| Resource, type Webinar | `/webinar-<title>.html` | `webinar-details.html` |
+- **Blog / Webinar** (`js/rg-content.js` `articleRef`): hero with the cover photo, formatted text (short first line = sub-heading, lines starting with - / • = numbered cards, `[image: url | caption]` = picture, blank line = new paragraph), side card (product, date, reading time / questions phone, "More about <product>" or "Watch / Register"), contact band. The text of the page is stored in the resource description after a line `[page]` (the short description stays before it). Resource cards of these types open their own page (READ / WATCH).
+- **Inline editing on every template page** (edit mode): solution (texts, photo, features, downloads), project highlight (heading, location, owner, product, benefits add / remove, photos change / add / remove, PDF link, challenge / solution text), blog / webinar (title, text, cover photo, "Insert image in the text"). SAVE writes the CMS item + change history (editors go to approval).
+- Dashboard > Resources: short description, "Text of its own page" (Blog Post / Webinar), cover photo, and a Page column with the address of the page.

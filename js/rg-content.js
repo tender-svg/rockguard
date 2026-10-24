@@ -113,7 +113,7 @@
     Promise.all([get('resources?all=true'), loadProducts()]).then(function (res) {
       var rows = res[0].filter(live).sort(function (a, b) { return String(a.published_date || '').localeCompare(String(b.published_date || '')); });   // oldest first = the order of the design
       if (!rows.length) return;
-      var list = rows.map(function (r) { var m = PROD_RE.exec(r.description || ''); return { title: r.title || '', type: r.document_type || '', product: m ? m[1] : 'all', file: r.file_url || '', ext: extOf(r.file_url || '') }; });
+      var list = rows.map(function (r) { var m = PROD_RE.exec(r.description || ''), t = r.document_type || '', own = t === 'Blog Post' ? 'blog-' + slugify(r.title) + '.html' : t === 'Webinar' ? 'webinar-' + slugify(r.title) + '.html' : ''; return { title: r.title || '', type: t, product: m ? m[1] : 'all', file: own || r.file_url || '', own: !!own, ext: own ? (t === 'Blog Post' ? 'READ' : 'WATCH') : extOf(r.file_url || '') }; });
       var blocks = $$('[data-vgroup="res"]'); if (!blocks.length) return;
       var host = dropVariants('res'); var block0 = blocks[0];
       // keep the shipped section (video, headings), only the dynamic parts are redrawn
@@ -135,7 +135,7 @@
         $('.rg130', sec).textContent = shown.length + (shown.length === 1 ? ' document' : ' documents');
         var empty = $('.rg131', sec);
         if (!shown.length) { if (!empty) { empty = document.createElement('div'); empty.className = 'rg131'; $('.rg132', sec).parentNode.insertBefore(empty, $('.rg132', sec)); } empty.textContent = 'No ' + filter.toLowerCase() + ' available for ' + (g[0] === 'all' ? 'RockGuard® products' : g[1]) + ' yet.'; } else if (empty) empty.remove();
-        $('.rg132', sec).innerHTML = shown.map(function (r) { return '<a class="rg133 rg-hover12" href="' + esc(r.file || '#') + '" target="_blank" rel="noopener"><div class="rg134"><span class="rg135">' + esc(r.type) + '</span><span class="rg136">' + esc(r.ext) + '</span></div><h4 class="rg137">' + esc(r.title) + '</h4><div class="rg138"><span class="rg139">' + esc(prodTitle(r.product)) + '</span><span class="rg140">↓</span></div></a>'; }).join('');
+        $('.rg132', sec).innerHTML = shown.map(function (r) { return '<a class="rg133 rg-hover12" href="' + esc(r.file || '#') + '"' + (r.own ? '' : ' target="_blank" rel="noopener"') + '><div class="rg134"><span class="rg135">' + esc(r.type) + '</span><span class="rg136">' + esc(r.ext) + '</span></div><h4 class="rg137">' + esc(r.title) + '</h4><div class="rg138"><span class="rg139">' + esc(prodTitle(r.product)) + '</span><span class="rg140">↓</span></div></a>'; }).join('');
       }
       sec.addEventListener('click', function (e) { var b = e.target.closest('[data-rp],[data-rf]'); if (!b) return; if (b.hasAttribute('data-rp')) prod = b.getAttribute('data-rp'); else filter = b.getAttribute('data-rf'); draw(); });
       draw();
@@ -146,7 +146,7 @@
   var storyX = function (r) { var x = json(r.result_text, {}); return x && typeof x === 'object' ? x : {}; };
   function storyOf(r) {
     var x = storyX(r), imgs = (x.images && x.images.length ? x.images : (r.hero_image_url ? [r.hero_image_url] : [])).slice();
-    return { id: r.id, slug: r.slug, title: r.title || '', location: r.location || '', owner: r.application || '', product: r.products_used || '', prod: x.prod || '', subtitle: x.subtitle || r.title || '', years: x.years || '', contractor: x.contractor || '', supplier: x.supplier || '',
+    return { raw: r, id: r.id, slug: r.slug, title: r.title || '', location: r.location || '', owner: r.application || '', product: r.products_used || '', prod: x.prod || '', subtitle: x.subtitle || r.title || '', years: x.years || '', contractor: x.contractor || '', supplier: x.supplier || '',
       benefits: Array.isArray(x.benefits) ? x.benefits : [], tech: x.tech || [], excerpt: x.excerpt || String(r.challenge_text || '').slice(0, 320), challenge: r.challenge_text || '', solution: r.solution_text || '', file: x.file || '', images: imgs };
   }
   function highlights() {
@@ -171,42 +171,166 @@
     }).catch(fail);
   }
 
-  /* ================================================================= ONE PROJECT HIGHLIGHT (project-highlight-<slug>.html / project-highlight.html?slug=) */
-  function routeSlug() {
+  /* ================================================================= ONE PROJECT HIGHLIGHT (project-highlight-<slug>.html / project-highlight.html?slug=) - the template of every project made in the Dashboard */
+  function routeSlug(prefix) {
     var q = /[?&]slug=([^&]+)/.exec(location.search); if (q) return decodeURIComponent(q[1]);
-    var m = /project-highlight-([^\/]+?)\.html$/i.exec(location.pathname); return m ? decodeURIComponent(m[1]) : '';
+    var m = new RegExp('/' + prefix + '-([^/]+?)\\.html$', 'i').exec(location.pathname); return m ? decodeURIComponent(m[1]) : '';
   }
+  var editing = function () { return !!(window.RGCMS && window.RGCMS.editing); };
+  var refreshBar = function () { if (window.RGCMS && window.RGCMS.refresh) window.RGCMS.refresh(); };
+  var notFoundBar = function (back, what) { return '<section class="rg162"><div class="rg163"><button class="rg164 rg-hover14" data-href="' + back + '">← Back</button></div></section><section class="rg183"><div class="rg184"><div class="rg185"><h2 class="rg186">' + what + ' not found</h2><p class="rg189">This page does not exist (any more).</p></div></div></section>'; };
   function project() {
     get('stories').then(function (rows) {
       var list = rows.filter(live).map(storyOf); if (!list.length) return;
-      var slug = routeSlug(), r = list.filter(function (x) { return x.slug === slug; })[0];
+      var slug = routeSlug('project-highlight'), r = list.filter(function (x) { return x.slug === slug; })[0];
       var host = $('[data-vgroup="pj"]') || $('[data-dyn="pj"]'); if (!host) return;
-      if (!r) { host.innerHTML = '<section class="rg162"><div class="rg163"><button class="rg164 rg-hover14" data-href="project-highlights.html">← All Projects</button></div></section><section class="rg183"><div class="rg184"><div class="rg185"><h2 class="rg186">Project not found</h2><p class="rg189">This project highlight does not exist (any more).</p></div></div></section>'; return; }
+      if (!r) { host.innerHTML = notFoundBar('project-highlights.html', 'Project'); return; }
       host.removeAttribute('hidden'); host.removeAttribute('style');
-      var gi = 0, ts = 0, tab = 'challenge', n = r.images.length;
-      document.title = r.title + ' | Project Highlights | RockGuard® HD';
+      var RGE = window.RGE, m = { subtitle: r.subtitle, location: r.location, owner: r.owner, product: r.product, benefits: r.benefits.slice(), challenge: r.challenge, solution: r.solution, images: r.images.slice(), file: r.file };
+      var gi = 0, ts = 0, tab = 'challenge', dirty = false;
+      var ce = function (f, multi) { return editing() ? ' contenteditable="true" spellcheck="false" data-pf="' + f + '"' + (multi ? ' data-multi="1"' : '') : ''; };
       function draw() {
+        var n = m.images.length; gi = Math.min(gi, Math.max(0, n - 1)); document.title = r.title + ' | Project Highlights | RockGuard® HD';
         var vis = Math.min(3, n); ts = Math.max(0, Math.min(ts, n - vis));
-        var thumbs = r.images.slice(ts, ts + vis).map(function (s, k) { var j = ts + k, on = j === gi; return '<button class="rg170 rg-hover15" data-gi="' + j + '" style="outline:3px solid ' + (on ? '#de4228' : 'transparent') + ';opacity:' + (on ? 1 : 0.7) + '"><img class="rg14" src="' + esc(imgSrc(s)) + '" alt=""></button>'; }).join('');
-        var words = (r.product + ' – ' + r.title).split(' '), head = words.slice(0, -1).join(' '), last = words[words.length - 1];
+        var thumbs = m.images.slice(ts, ts + vis).map(function (s, k) { var j = ts + k, on = j === gi; return '<div style="position:relative"><button class="rg170 rg-hover15" data-gi="' + j + '" style="outline:3px solid ' + (on ? '#de4228' : 'transparent') + ';opacity:' + (on ? 1 : 0.7) + '"><img class="rg14" src="' + esc(imgSrc(s)) + '" alt=""></button>' + (editing() ? '<button type="button" class="app-x rl-ctl" data-pa="rmimg" data-i="' + j + '" title="Remove this photo" style="top:2px;right:2px;z-index:5">×</button>' : '') + '</div>'; }).join('');
+        var words = (m.product + ' – ' + r.title).split(' '), head = words.slice(0, -1).join(' '), last = words[words.length - 1];
         var tabs = [['challenge', "Client's Challenge"], ['solution', 'RockGuard® Solution']].map(function (t) { var on = t[0] === tab; return '<button class="rg188 rg-hover16" data-ct="' + t[0] + '" style="background:' + (on ? '#de4228' : 'transparent') + ';color:' + (on ? '#fff' : '#2c2e35') + '">' + t[1] + '</button>'; }).join('');
+        var ben = m.benefits.map(function (b, i) { return '<div class="rg180"><span class="rg181">✓</span><span' + (editing() ? ' contenteditable="true" spellcheck="false" data-pb="' + i + '"' : '') + '>' + esc(b) + '</span>' + (editing() ? '<button type="button" class="app-x rl-ctl" data-pa="rmben" data-i="' + i + '" style="position:static;margin-left:8px">×</button>' : '') + '</div>'; }).join('');
         host.innerHTML =
           '<section class="rg162"><div class="rg163"><button class="rg164 rg-hover14" data-href="project-highlights.html">← All Projects</button></div></section>' +
           '<section class="rg165"><div class="rg166"><div class="rg167"><button class="rg168 rg-hover9" data-up aria-label="Previous photos">▲</button><div class="rg169">' + thumbs + '</div><button class="rg168 rg-hover9" data-down aria-label="More photos">▼</button></div>' +
-          '<div class="rg171">' + img(r.images[gi], r.title) + '<button class="rg172 rg-hover6" data-gi="prev" aria-label="Previous photo">‹</button><button class="rg173 rg-hover6" data-gi="next" aria-label="Next photo">›</button></div></div>' +
-          '<div class="rg174"><div class="rg175"><span class="rg176">' + esc(r.product) + '</span><span class="rg158">Case Study · ' + esc(r.location) + '</span></div><h1 class="rg177">' + esc(r.subtitle) + '</h1>' +
-          '<div class="rg178"><div><strong class="rg44">Owner:</strong> ' + esc(r.owner) + '</div><div><strong class="rg44">Products Used:</strong> ' + esc(r.product) + '</div></div>' +
-          '<div class="rg179">' + r.benefits.map(function (b) { return '<div class="rg180"><span class="rg181">✓</span>' + esc(b) + '</div>'; }).join('') + '</div>' +
-          (r.file ? '<a class="rg182 rg-hover9" href="' + esc(r.file) + '" target="_blank" rel="noopener">Download Project Highlight</a>' : '') + '</div></section>' +
-          '<section class="rg183"><div class="rg184"><div class="rg185"><h2 class="rg186">' + esc(head) + ' <span class="rg41">' + esc(last) + '</span></h2><div class="rg187">' + tabs + '</div><p class="rg189">' + esc(tab === 'challenge' ? r.challenge : r.solution) + '</p></div></div></section>';
+          '<div class="rg171">' + img(m.images[gi], r.title) + '<button class="rg172 rg-hover6" data-gi="prev" aria-label="Previous photo">‹</button><button class="rg173 rg-hover6" data-gi="next" aria-label="Next photo">›</button>' +
+          (editing() ? '<div class="rl-ctl" style="position:absolute;left:12px;bottom:12px;z-index:6;display:flex;gap:8px"><button type="button" class="dyn-photo" style="position:static" data-pa="photo">📷 Change this photo</button><button type="button" class="dyn-photo" style="position:static" data-pa="addimg">＋ Add photo</button></div>' : '') + '</div></div>' +
+          '<div class="rg174"><div class="rg175"><span class="rg176"' + ce('product') + '>' + esc(m.product) + '</span><span class="rg158">Case Study · <span' + ce('location') + '>' + esc(m.location) + '</span></span></div><h1 class="rg177"' + ce('subtitle') + '>' + esc(m.subtitle) + '</h1>' +
+          '<div class="rg178"><div><strong class="rg44">Owner:</strong> <span' + ce('owner') + '>' + esc(m.owner) + '</span></div><div><strong class="rg44">Products Used:</strong> ' + esc(m.product) + '</div></div>' +
+          '<div class="rg179">' + ben + '</div>' + (editing() ? '<div class="rl-ctl"><button type="button" class="dyn-add" data-pa="addben">＋ Add benefit</button></div>' : '') +
+          (m.file || editing() ? '<a class="rg182 rg-hover9" href="' + esc(m.file || '#') + '" target="_blank" rel="noopener">Download Project Highlight</a>' : '') + (editing() ? '<div class="rl-ctl" style="margin-top:10px"><button type="button" class="dyn-add" data-pa="file">🔗 Set the PDF / link of this button</button></div>' : '') + '</div></section>' +
+          '<section class="rg183"><div class="rg184"><div class="rg185"><h2 class="rg186">' + esc(head) + ' <span class="rg41">' + esc(last) + '</span></h2><div class="rg187">' + tabs + '</div><p class="rg189" style="white-space:pre-line"' + ce(tab === 'challenge' ? 'challenge' : 'solution', true) + '>' + esc(tab === 'challenge' ? m.challenge : m.solution) + '</p></div></div></section>';
       }
+      var mark = function () { dirty = true; refreshBar(); };
       host.addEventListener('click', function (e) {
-        var g = e.target.closest('[data-gi]'), c = e.target.closest('[data-ct]');
+        var pa = e.target.closest('[data-pa]');
+        if (pa && editing()) {
+          e.preventDefault(); e.stopImmediatePropagation(); var a = pa.getAttribute('data-pa'), i = parseInt(pa.getAttribute('data-i'), 10);
+          if (a === 'rmimg') { m.images.splice(i, 1); mark(); draw(); }
+          else if (a === 'rmben') { m.benefits.splice(i, 1); mark(); draw(); }
+          else if (a === 'addben') { m.benefits.push('New benefit'); mark(); draw(); }
+          else if (a === 'photo' || a === 'addimg') RGE.pickFile('image/*').then(function (file) { if (!file) return; pa.textContent = 'Uploading…'; return RGE.upload(file, 'projects').then(function (u) { if (a === 'addimg' || !m.images.length) { m.images.push(u); gi = m.images.length - 1; } else m.images[gi] = u; mark(); draw(); }); }).catch(function (err) { window.RGDialog.alert(err.message, { title: 'Upload failed', danger: true }); draw(); });
+          else if (a === 'file') RGE.fileLink({ title: 'Project highlight PDF / link', url: m.file, accept: '.pdf,application/pdf', folder: 'projects', hint: 'What the "Download Project Highlight" button opens.' }).then(function (x) { if (!x) return; m.file = x.clear ? '' : x.url; mark(); draw(); });
+          return;
+        }
+        var g = e.target.closest('[data-gi]'), c = e.target.closest('[data-ct]'), n = m.images.length || 1;
         if (g) { var v = g.getAttribute('data-gi'); gi = v === 'prev' ? (gi - 1 + n) % n : v === 'next' ? (gi + 1) % n : parseInt(v, 10); if (gi < ts) ts = gi; if (gi >= ts + 3) ts = gi - 2; draw(); }
         else if (c) { tab = c.getAttribute('data-ct'); draw(); }
         else if (e.target.closest('[data-up]')) { ts--; draw(); }
         else if (e.target.closest('[data-down]')) { ts++; draw(); }
+      }, true);
+      host.addEventListener('input', function (e) {
+        if (!editing()) return; var t = e.target.closest && e.target.closest('[data-pf],[data-pb]'); if (!t) return;
+        var v = (t.hasAttribute('data-multi') ? t.innerText : t.textContent).split(String.fromCharCode(160)).join(' ');
+        if (t.hasAttribute('data-pb')) m.benefits[parseInt(t.getAttribute('data-pb'), 10)] = v; else m[t.getAttribute('data-pf')] = v;
+        mark();
       });
+      host.addEventListener('keydown', function (e) { if (editing() && e.key === 'Enter' && e.target.closest && e.target.closest('[data-pf]:not([data-multi]),[data-pb]')) e.preventDefault(); });
+      host.addEventListener('paste', function (e) { var t = e.target.closest && e.target.closest('[data-pf],[data-pb]'); if (!editing() || !t) return; e.preventDefault(); var txt = (e.clipboardData || window.clipboardData).getData('text/plain'); document.execCommand('insertText', false, t.hasAttribute('data-multi') ? txt : txt.replace(/\s*\n\s*/g, ' ')); });
+      function save() {
+        var keep = storyX(r.raw), body = { location: m.location, application: m.owner, products_used: m.product, hero_image_url: m.images[0] || '', challenge_text: m.challenge, solution_text: m.solution, project_benefits: m.benefits.filter(Boolean).join(', '),
+          result_text: JSON.stringify(Object.assign({}, keep, { images: m.images.filter(Boolean), file: m.file || '', subtitle: m.subtitle, benefits: m.benefits.map(function (b) { return String(b).trim(); }).filter(Boolean) })) };
+        return RGE.api('PATCH', 'stories/' + r.id, body).then(function () { var l = {}; l[r.title] = 'Updated'; return RGE.pending ? null : RGE.history('stories', l); }).then(function () { dirty = false; refreshBar(); return 1; });
+      }
+      if (window.RGCMS && window.RGCMS.registerHook) window.RGCMS.registerHook('project', { count: function () { return dirty ? 1 : 0; }, run: save });
+      document.addEventListener('rg-edit-mode', function () { draw(); });
+      draw();
+    }).catch(fail);
+  }
+
+  /* ================================================================= BLOG POST / WEBINAR (blog-<slug>.html, webinar-<slug>.html) - the templates of the resources of that type
+   * The description of a resource holds two texts: "[product:<slug>] short text" (the card on the Resources page) and, after a line "[page]", the text of its own page. */
+  var isArt = function (t) { return t === 'Blog Post' || t === 'Webinar'; };
+  var slugify = function (s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); };
+  var splitDesc = function (text, type) {
+    text = String(text || ''); var m = /(^|\n)[ \t]*\[page\][ \t]*(\n|$)/.exec(text);
+    if (m) return { desc: text.slice(0, m.index).trim(), body: text.slice(m.index + m[0].length).trim() };
+    return isArt(type) ? { desc: '', body: text.trim() } : { desc: text.trim(), body: '' };
+  };
+  function articleOf(r) {
+    var p = PROD_RE.exec(r.description || ''), sp = splitDesc(String(r.description || '').replace(PROD_RE, ''), r.document_type);
+    return { id: r.id, title: r.title || '', type: r.document_type || '', slug: slugify(r.title), product: p ? p[1] : 'all', desc: sp.desc, body: sp.body, file: r.file_url || '', thumb: r.thumbnail_url || '', date: r.published_date || '' };
+  }
+  // the text typed in the page (plain text) -> paragraphs; a short first line of a block = sub-heading; lines starting with "• " / "- " = a list (numbered cards); [image: url | caption] = a picture
+  function fmtArticle(t, cards) {
+    return String(t || '').split(/\n\s*\n/).map(function (blk) {
+      var ls = blk.split('\n').map(function (l) { return l.replace(/\s+$/, ''); }).filter(function (l) { return l.trim(); }), out = '';
+      if (!ls.length) return '';
+      if (ls.length > 1 && ls[0].length <= 70 && !/[.:;!?]$/.test(ls[0].trim()) && !/^\s*([•\-*]|\d+[.)])\s/.test(ls[0]) && !/^\s*\[image:/i.test(ls[0])) { out += '<h3 class="art-h">' + esc(ls.shift().trim()) + '</h3>'; }
+      var para = [], list = [], flush = function () { if (para.length) out += '<p>' + para.join('<br>') + '</p>'; if (list.length) out += '<ul>' + list.join('') + '</ul>'; para = []; list = []; };
+      ls.forEach(function (l) {
+        var im = /^\s*\[image:\s*([^\]|]+?)\s*(?:\|\s*([^\]]*?)\s*)?\]\s*$/i.exec(l);
+        if (im) {   // a picture inside the text: only own images (/images/..., images/...) or https links
+          if (!/^(\/?images\/|\/|https:\/\/)/i.test(im[1]) || /^\s*javascript:/i.test(im[1])) return;
+          flush(); out += '<figure class="art-fig"><img src="' + esc(imgSrc(im[1])) + '" alt="' + esc(im[2] || '') + '" loading="lazy">' + (im[2] ? '<figcaption>' + esc(im[2]) + '</figcaption>' : '') + '</figure>'; return;
+        }
+        var m = /^\s*(?:[•\-*]|\d+[.)])\s+(.*)$/.exec(l);
+        if (m) { if (para.length) { out += '<p>' + para.join('<br>') + '</p>'; para = []; } var tx = m[1], k = cards ? tx.indexOf(':') : -1; list.push('<li>' + (k > 0 && k <= 48 ? '<strong>' + esc(tx.slice(0, k)) + '</strong> ' + esc(tx.slice(k + 1).trim().replace(/^./, function (c) { return c.toUpperCase(); })) : esc(tx)) + '</li>'); }
+        else { if (list.length) { out += '<ul>' + list.join('') + '</ul>'; list = []; } para.push(esc(l.trim())); }
+      });
+      flush(); return out;
+    }).join('');
+  }
+  function articleRef(kind) {
+    var type = kind === 'blog' ? 'Blog Post' : 'Webinar', host = $('[data-dyn="art"]'); if (!host) return;
+    Promise.all([get('resources?all=true'), loadProducts()]).then(function (res) {
+      var list = res[0].filter(live).map(articleOf), slug = routeSlug(kind), r = list.filter(function (x) { return x.type === type && x.slug === slug; })[0];
+      host.removeAttribute('style');
+      if (!r) { host.innerHTML = notFoundBar('resources.html', kind === 'blog' ? 'Blog post' : 'Webinar'); return; }
+      var RGE = window.RGE, m = { title: r.title, body: r.body, thumb: r.thumb }, dirty = false;
+      var ce = function (f) { return editing() ? ' contenteditable="true" spellcheck="false" data-af="' + f + '"' + (f === 'body' ? ' data-multi="1"' : '') : ''; };
+      var d = r.date ? new Date(r.date) : null, when = d && !isNaN(d) ? d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+      var pname = prodTitle(r.product), blog = kind === 'blog';
+      function draw() {
+        document.title = m.title + ' | Resources | RockGuard® HD';
+        var cover = m.thumb || 'images/IMG_0097_crop.webp', words = String(m.body || '').split(/\s+/).filter(Boolean).length, mins = Math.max(1, Math.round(words / 200));
+        var photo = function (label) { return editing() ? '<button type="button" class="dyn-photo rl-ctl" data-aa="photo" style="z-index:6">📷 ' + label + '</button>' : ''; };
+        var hero = '<section class="wb-hero"><img class="rg14" src="' + esc(imgSrc(cover)) + '" alt=""><div class="rg15"></div><div class="wb-in"><span class="wb-pill"><i></i>' + (blog ? 'Blog Post' : 'Webinar') + '</span><h1 class="wb-h1"' + ce('title') + '>' + esc(m.title) + '</h1><div class="wb-crumb"><a href="index.html">Home</a> / <a href="resources.html">Resources</a> / <span>' + esc(m.title) + '</span></div>' +
+          (blog ? '<div class="bl-meta">' + (when ? esc(when) + ' · ' : '') + mins + ' min read</div>' : '') + (editing() ? '<div style="margin-top:16px;position:relative">' + photo('Cover photo') + '</div>' : '') + '</div></section>';
+        var rows = [['Product', pname], ['Posted', when], blog ? ['Reading time', mins + ' min'] : ['Questions?', '<a href="tel:+18008484500">1-800-848-4500</a>']].filter(function (x) { return x[1]; }).map(function (x) { return '<div><dt>' + x[0] + '</dt><dd>' + (x[0] === 'Questions?' ? x[1] : esc(x[1])) + '</dd></div>'; }).join('');
+        var cta = blog ? (r.product && r.product !== 'all' && prodByKey(r.product) ? '<a href="resources.html?prod=' + encodeURIComponent(r.product) + '" class="wb-cta">More about ' + esc(pname) + ' →</a>' : '<a href="resources.html" class="wb-cta">More resources →</a>')
+          : (r.file ? '<a href="' + esc(r.file) + '"' + (/^https?:/i.test(r.file) ? ' target="_blank" rel="noopener"' : '') + ' class="wb-cta">Watch / Register →</a>' : '<a href="contact.html" class="wb-cta">Contact us to register →</a>');
+        var side = '<aside class="wb-side"><div class="wb-card">' + (blog ? '' : '<div class="wb-img"><img src="' + esc(imgSrc(cover)) + '" alt="' + esc(m.title) + '"><span class="wb-play" aria-hidden="true"></span>' + photo('Change photo') + '</div>') + '<div class="wb-body"><span class="wb-badge">' + (blog ? 'Blog Post' : 'Webinar') + '</span><dl class="wb-dl">' + rows + '</dl>' + cta + '</div></div>' +
+          '<div class="bl-help"><b>Need specifications or installation support?</b><span>Talk to the RockGuard® team.</span><a href="contact.html">Contact us →</a></div></aside>';
+        var ins = editing() ? '<div class="art-ins rl-ctl"><button type="button" class="dyn-add" data-aa="ins">＋ Insert image in the text</button><span>The picture is put where the cursor is in the text below (or at the end). It is a line like [image: /images/photo.webp | caption].</span></div>' : '';
+        var text = '<div class="wb-main">' + ins + (blog ? '<figure class="bl-fig"><img src="' + esc(imgSrc(cover)) + '" alt="' + esc(m.title) + '">' + photo('Change photo') + '</figure>' : '') +
+          '<div class="art' + (editing() ? ' ed-multi' : ' art-cards') + '" style="font-size:18px;line-height:1.8;min-height:60px"' + ce('body') + '>' + (editing() ? esc(m.body) : fmtArticle(m.body, true)) + '</div></div>';
+        host.innerHTML = hero + '<section class="wb-sec"><div class="wb-wrap">' + text + side + '</div></section>';
+      }
+      var mark = function () { dirty = true; refreshBar(); };
+      host.addEventListener('click', function (e) {
+        var b = e.target.closest('[data-aa]'); if (!b || !editing()) return; e.preventDefault(); e.stopImmediatePropagation();
+        if (b.getAttribute('data-aa') === 'photo') RGE.pickFile('image/*').then(function (file) { if (!file) return; b.textContent = 'Uploading…'; return RGE.upload(file, 'resources').then(function (u) { m.thumb = u; mark(); draw(); }); }).catch(function (err) { window.RGDialog.alert(err.message, { title: 'Upload failed', danger: true }); draw(); });
+        else {
+          var box = host.querySelector('[data-af="body"]'); if (!box) return;
+          RGE.pickFile('image/*').then(function (file) {
+            if (!file) return; b.textContent = 'Uploading…';
+            return RGE.upload(file, 'resources').then(function (url) {
+              box.focus(); var sel = window.getSelection();
+              if (!sel.rangeCount || !box.contains(sel.anchorNode)) { var rg = document.createRange(); rg.selectNodeContents(box); rg.collapse(false); sel.removeAllRanges(); sel.addRange(rg); }
+              document.execCommand('insertText', false, '\n\n[image: ' + url + ' | ]\n\n'); b.textContent = '＋ Insert image in the text'; m.body = box.innerText; mark();
+            });
+          }).catch(function (err) { window.RGDialog.alert(err.message, { title: 'Upload failed', danger: true }); b.textContent = '＋ Insert image in the text'; });
+        }
+      }, true);
+      host.addEventListener('input', function (e) {
+        if (!editing()) return; var t = e.target.closest && e.target.closest('[data-af]'); if (!t) return;
+        m[t.getAttribute('data-af')] = (t.hasAttribute('data-multi') ? t.innerText : t.textContent).split(String.fromCharCode(160)).join(' '); mark();
+      });
+      host.addEventListener('keydown', function (e) { if (editing() && e.key === 'Enter' && e.target.closest && e.target.closest('[data-af]:not([data-multi])')) e.preventDefault(); });
+      host.addEventListener('paste', function (e) { var t = e.target.closest && e.target.closest('[data-af]'); if (!editing() || !t) return; e.preventDefault(); var txt = (e.clipboardData || window.clipboardData).getData('text/plain'); document.execCommand('insertText', false, t.hasAttribute('data-multi') ? txt : txt.replace(/\s*\n\s*/g, ' ')); });
+      function save() {
+        var body = { title: m.title, description: '[product:' + r.product + '] ' + r.desc + (m.body.trim() ? '\n\n[page]\n\n' + m.body.trim() : ''), thumbnail_url: m.thumb };
+        return RGE.api('PATCH', 'resources/' + r.id, body).then(function () { var l = {}; l[m.title] = 'Updated'; return RGE.pending ? null : RGE.history('resources', l); }).then(function () { dirty = false; refreshBar(); return 1; });
+      }
+      if (window.RGCMS && window.RGCMS.registerHook) window.RGCMS.registerHook('article', { count: function () { return dirty ? 1 : 0; }, run: save });
+      document.addEventListener('rg-edit-mode', function () { draw(); });
       draw();
     }).catch(fail);
   }
@@ -278,5 +402,5 @@
     }).catch(fail);
   }
 
-  if (page === 'home') home(); else if (page === 'products') products(); else if (page === 'resources') resources(); else if (page === 'highlights') highlights(); else if (page === 'project') project(); else if (page === 'ref-solution') solutionRef();
+  if (page === 'home') home(); else if (page === 'products') products(); else if (page === 'resources') resources(); else if (page === 'highlights') highlights(); else if (page === 'project') project(); else if (page === 'ref-solution') solutionRef(); else if (page === 'ref-blog') articleRef('blog'); else if (page === 'ref-webinar') articleRef('webinar');
 })();
