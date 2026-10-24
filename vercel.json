@@ -1,6 +1,7 @@
 {
   "rewrites": [
     { "source": "/api/:path*", "destination": "https://cmsapi.qpaix.com/rockguard/api/:path*" },
-    { "source": "/admin/:path*", "destination": "https://cmsapi.qpaix.com/rockguard/admin/:path*" }
+    { "source": "/admin/:path*", "destination": "https://cmsapi.qpaix.com/rockguard/admin/:path*" },
+    { "source": "/project-highlight-:slug.html", "destination": "/project-highlight.html" }
   ]
 }
