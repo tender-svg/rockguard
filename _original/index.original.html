@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./css/style.css">
+</helmet>
+
+
+
+<header class="rg1">
+  <div class="rg2">
+    <div class="rg3" onClick="{{ goHome }}">
+      <img class="rg4" src="./images/rockguard-hd-logo-tm2.png" alt="RockGuard® HD Pipeline Protection Mesh">
+    </div>
+    <nav class="rg5">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="5">
+        <div class="rg6" onMouseEnter="{{ n.enter }}" onMouseLeave="{{ n.leave }}">
+          <button class="rg7 rg-hover1" onClick="{{ n.onClick }}" style="color:{{ n.color }};border-bottom:2px solid {{ n.line }}">{{ n.label }}<sc-if value="{{ n.hasMenu }}" hint-placeholder-val="{{ false }}"><span class="rg8">▾</span></sc-if></button>
+          <sc-if value="{{ n.open }}" hint-placeholder-val="{{ false }}">
+            <div class="rg9">
+              <div class="rg10">
+                <sc-for list="{{ n.items }}" as="m" hint-placeholder-count="3">
+                  <button class="rg11 rg-hover2" onClick="{{ m.onClick }}" style="background:{{ m.bg }};color:{{ m.color }}">{{ m.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-for>
+    </nav>
+  </div>
+</header>
+
+<main data-screen-label="{{ page }}">
+
+<!-- ================= HOME ================= -->
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div class="rg12">
+
+<sc-if value="{{ heroFull }}" hint-placeholder-val="{{ true }}">
+<section class="rg13">
+  <img class="rg14" src="https://rockguard.biz/wp-content/uploads/2019/06/IMG_0097_crop.jpg" alt="">
+  <div class="rg15"></div>
+  <div class="rg16">
+    <div class="rg17"><span class="rg18"></span>RockGuard® HD | Pipeline Asset Protection</div>
+    <h1 class="rg19">The Rock Stops Here.™</h1>
+    <p class="rg20">The <strong class="rg21">Standard</strong> in <strong class="rg21">Pipeline Asset Protection</strong>.</p>
+    <div class="rg22">
+      <button class="rg23 rg-hover3" onClick="{{ goProducts }}">Explore Products</button>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ heroSplit }}" hint-placeholder-val="{{ false }}">
+<section class="rg24">
+  <div class="rg25">
+    <div class="rg26">
+      <div class="rg17"><span class="rg18"></span>RockGuard® HD | Pipeline Asset Protection</div>
+      <h1 class="rg27">The Rock Stops Here.™</h1>
+      <p class="rg28">The <strong class="rg21">Standard</strong> in <strong class="rg21">Pipeline Asset Protection</strong>.</p>
+      <div class="rg22">
+        <button class="rg29 rg-hover4" onClick="{{ goProducts }}">Explore Products</button>
+      </div>
+    </div>
+    <div class="rg30"><img class="rg14" src="https://rockguard.biz/wp-content/uploads/2019/06/IMG_0097_crop.jpg" alt="RockGuard HD on pipeline"></div>
+  </div>
+</section>
+</sc-if>
+
+<section class="rg31">
+  <div class="rg32">
+    <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+      <div class="rg33">
+        <div class="rg34">{{ s.v }}</div>
+        <div class="rg35">{{ s.l }}</div>
+      </div>
+    </sc-for>
+  </div>
+</section>
+
+<section class="rg36">
+  <div class="rg37">
+    <div class="rg38">
+      <div class="rg39"><span class="rg18"></span>About the Manufacturer</div>
+      <h2 class="rg40">Trusted by the Pipeline Industry <span class="rg41">Since 1981</span></h2>
+      <div class="rg42">
+        <p class="rg43"><strong class="rg44">Industrial Fabrics, Inc.</strong> has provided trusted service to the pipeline industry since 1981, and manufactures RockGuard® HD Pipeline Protection Mesh — the standard in pipeline asset protection.</p>
+        <p class="rg43">RockGuard® HD is an 11 mm, three-dimensional bi-planar extruded diamond mesh rock shield made from polyethylene. It protects pipe coating during backfill, rock migration and future excavation, and stays lightweight and flexible to handle — even at low temperatures.</p>
+        <p class="rg43">Today RockGuard® HD holds over <strong class="rg44">75 midstream approvals</strong> and more than <strong class="rg44">45 contractor approvals</strong>.</p>
+      </div>
+    </div>
+    <div class="rg45">
+      <img class="rg46" src="https://rockguard.biz/wp-content/uploads/2019/05/IFI-CP-ES_Logo-Stacked.png" alt="Industrial Fabrics, Inc.">
+    </div>
+  </div>
+</section>
+
+
+
+
+<section class="rg47">
+  <div class="rg48">
+    <div class="rg49">
+      <div class="rg39"><span class="rg18"></span>Products</div>
+      <h2 class="rg50"><span class="rg51">Pipeline Protection</span> From Backfill to Buoyancy</h2>
+    </div>
+  </div>
+  <div class="rg52">
+    <sc-for list="{{ mainProducts }}" as="p" hint-placeholder-count="2">
+      <article class="rg53 rg-hover5" onClick="{{ p.open }}">
+        <div class="rg54" style="aspect-ratio:{{ p.ratio }}"><sc-if value="{{ p.homeImg }}" hint-placeholder-val="{{ false }}"><img class="rg14" src="{{ p.homeImg }}" alt="{{ p.name }}"></sc-if><span class="rg55">{{ p.tag }}</span></div>
+        <div class="rg56">
+          <h3 class="rg57">{{ p.name }}</h3>
+          <p class="rg58">{{ p.summary }}</p>
+          <div class="rg59">Learn More →</div>
+        </div>
+      </article>
+    </sc-for>
+  </div>
+  <div class="rg60">
+    <button class="rg61 rg-hover6" onClick="{{ goProducts }}">View All Products</button>
+  </div>
+</section>
+<section class="rg62">
+  <div class="rg63">
+    <div>
+      <div class="rg39"><span class="rg18"></span>RockGuard® HD in the Field</div>
+      <h2 class="rg64">Photo <span class="rg41">Gallery</span></h2>
+    </div>
+    <div class="rg65">
+      <button class="rg66 rg-hover7" onClick="{{ ssPrev }}" aria-label="Previous photo">‹</button>
+      <button class="rg66 rg-hover7" onClick="{{ ssNext }}" aria-label="Next photo">›</button>
+    </div>
+  </div>
+  <div class="rg67" onMouseEnter="{{ ssPause }}" onMouseLeave="{{ ssResume }}">
+    <div class="rg68">
+      <div class="rg69" onTransitionEnd="{{ ssEnd }}" style="transform:translateX({{ ssOffset }});transition:{{ ssTrans }}">
+        <sc-for list="{{ ssSlides }}" as="s" hint-placeholder-count="3">
+          <div class="rg70"><div class="rg71"><img class="rg14" src="{{ s.src }}" alt="RockGuard HD installation photo"></div></div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<section class="rg72">
+  <div class="rg73">
+    <div>
+      <div class="rg74"><span class="rg75"></span>See It In Action</div>
+      <h2 class="rg50">Built for the <span class="rg76">Right-of-Way</span></h2>
+      <p class="rg77">A premium rock shield due to its lightweight and flexible handling — even at low temperatures.</p>
+    </div>
+    <div class="rg78"><iframe class="rg79" src="https://www.youtube.com/embed/EjtGvn3CJL4" title="RockGuard HD" allowfullscreen="true"></iframe></div>
+  </div>
+</section>
+
+
+</div>
+</sc-if>
+
+<!-- ================= PRODUCTS ================= -->
+<sc-if value="{{ isProducts }}" hint-placeholder-val="{{ false }}">
+<section class="rg80">
+  <div class="rg81">
+    <div class="rg82"><span class="rg18"></span>RockGuard® HD | Products</div>
+    <h1 class="rg83">Pipeline Protection <span class="rg41">Products</span></h1>
+    <div class="rg84">
+      <sc-for list="{{ productTabs }}" as="t" hint-placeholder-count="5">
+        <button class="rg85 rg-hover8" onClick="{{ t.onClick }}" style="background:{{ t.bg }};color:{{ t.color }}">{{ t.name }}</button>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+<section class="rg86">
+  <div class="rg87">
+    <sc-if value="{{ notAcc }}" hint-placeholder-val="{{ true }}"><div class="rg88"><img class="rg14" src="{{ cur.detailImg }}" alt="{{ cur.name }}"></div></sc-if>
+    <sc-if value="{{ isAcc }}" hint-placeholder-val="{{ false }}"><div class="rg89">
+      <sc-for list="{{ accCollage }}" as="c" hint-placeholder-count="2">
+        <div class="rg90"><img class="rg91" src="{{ c.src }}" alt="{{ c.alt }}" style="object-fit:{{ c.fit }};padding:{{ c.pad }}"></div>
+      </sc-for>
+    </div></sc-if>
+    <div>
+      <div class="rg92">{{ cur.tag }}</div>
+      <h2 class="rg93">{{ cur.name }}</h2>
+      <sc-if value="{{ notAcc }}" hint-placeholder-val="{{ true }}"><p class="rg94">{{ cur.lead }}</p></sc-if>
+      <sc-if value="{{ isAcc }}" hint-placeholder-val="{{ false }}"><div class="rg95">
+        <sc-for list="{{ accItems }}" as="d" hint-placeholder-count="2">
+          <div class="rg96">
+            <p class="rg97"><strong class="rg44">{{ d.name }}</strong> {{ d.desc }}</p>
+          </div>
+        </sc-for>
+      </div></sc-if>
+      <div class="rg98">
+        <button class="rg99 rg-hover9" onClick="{{ goContact }}">Get a Quote</button>
+        <sc-if value="{{ cur.dataSheet }}" hint-placeholder-val="{{ true }}">
+          <a class="rg100 rg-hover7" href="{{ cur.dataSheet }}" target="_blank">Data Sheet ↓</a>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="rg80">
+  <div class="rg101">
+    <div class="rg102">
+      <div>
+        <div class="rg103"><span class="rg18"></span>{{ cur.name }}</div>
+        <h3 class="rg104">Features &amp; <span class="rg41">Benefits</span></h3>
+      </div>
+      <div class="rg105">{{ cur.featCount }} Key Advantages</div>
+    </div>
+    <div class="rg106">
+      <sc-for list="{{ cur.features }}" as="f" hint-placeholder-count="6">
+        <div class="rg107 rg-hover10">
+          <div class="rg108">
+            <span class="rg109">{{ f.n }}</span>
+            <span class="rg110"></span>
+          </div>
+          <h4 class="rg111">{{ f.t }}</h4>
+          <sc-if value="{{ f.d }}" hint-placeholder-val="{{ true }}"><p class="rg112">{{ f.d }}</p></sc-if>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+
+
+</sc-if>
+
+<!-- ================= RESOURCES ================= -->
+<sc-if value="{{ isResources }}" hint-placeholder-val="{{ false }}">
+<section class="rg80">
+  <div class="rg113">
+    <div class="rg74"><span class="rg18"></span>RockGuard® HD | Resources</div>
+    <h1 class="rg83">Technical <span class="rg41">Library</span></h1>
+  </div>
+</section>
+<section class="rg114">
+  <div class="rg115">
+    <div>
+      <div class="rg116">Browse by Product</div>
+      <h2 class="rg117">{{ prodTitle }}</h2>
+    </div>
+    <div class="rg118">Pipeline Protection Resources</div>
+  </div>
+  <div class="rg119">
+    <sc-for list="{{ prodFilters }}" as="p" hint-placeholder-count="4">
+      <button class="rg120" onClick="{{ p.onClick }}">
+        <img class="rg121 rg-hover11" src="{{ p.img }}" alt="">
+        <div class="rg122"></div>
+        <div class="rg123">
+          <span class="rg124">{{ p.count }}</span>
+          <span class="rg125">{{ p.label }}</span>
+        </div>
+        <div class="rg126" style="background:{{ p.bar }}"></div>
+      </button>
+    </sc-for>
+  </div>
+  <div class="rg127">
+    <div class="rg128">
+      <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
+        <button class="rg129 rg-hover1" onClick="{{ f.onClick }}" style="border-bottom:3px solid {{ f.line }};color:{{ f.color }}">{{ f.label }}</button>
+      </sc-for>
+    </div>
+    <div class="rg130">{{ resCount }}</div>
+  </div>
+  <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+    <div class="rg131">{{ emptyMsg }}</div>
+  </sc-if>
+  <div class="rg132">
+    <sc-for list="{{ filteredResources }}" as="r" hint-placeholder-count="9">
+      <a class="rg133 rg-hover12" href="{{ r.url }}" target="_blank">
+        <div class="rg134"><span class="rg135">{{ r.type }}</span><span class="rg136">{{ r.ext }}</span></div>
+        <h4 class="rg137">{{ r.label }}</h4>
+        <div class="rg138"><span class="rg139">{{ r.product }}</span><span class="rg140">↓</span></div>
+      </a>
+    </sc-for>
+  </div>
+
+  <div class="rg141">
+    <div class="rg78"><iframe class="rg79" src="https://www.youtube.com/embed/EjtGvn3CJL4" title="RockGuard HD video" allowfullscreen="true"></iframe></div>
+    <div>
+      <div class="rg92">Video</div>
+      <h3 class="rg142">RockGuard® HD Overview</h3>
+      <p class="rg143">Long-term protection to pipelines during backfill operations, rock migration, and even during future excavation.</p>
+    </div>
+  </div>
+</section>
+</sc-if>
+
+<!-- ================= PROJECT HIGHLIGHTS ================= -->
+<sc-if value="{{ isHighlights }}" hint-placeholder-val="{{ false }}">
+<section class="rg80">
+  <div class="rg113">
+    <div class="rg74"><span class="rg18"></span>RockGuard® HD | Field Results</div>
+    <h1 class="rg83">Project <span class="rg41">Highlights</span></h1>
+  </div>
+</section>
+<sc-if value="{{ hlIsList }}" hint-placeholder-val="{{ true }}">
+<section class="rg144">
+  <div class="rg145">
+    <label class="rg146">
+      <span class="rg147">⌕</span>
+      <input class="rg148" value="{{ hlQuery }}" onChange="{{ hlSearch }}" placeholder="Search projects…">
+    </label>
+    <div class="rg149">
+      <sc-for list="{{ hlModes }}" as="m" hint-placeholder-count="2">
+        <button class="rg150" onClick="{{ m.onClick }}" style="background:{{ m.bg }};color:{{ m.color }}">{{ m.icon }}</button>
+      </sc-for>
+    </div>
+  </div>
+  <sc-if value="{{ hlEmpty }}" hint-placeholder-val="{{ false }}">
+    <div class="rg151">No project highlights match this search.</div>
+  </sc-if>
+  <div class="rg152" style="grid-template-columns:{{ hlGridCols }};gap:{{ hlGap }}">
+    <sc-for list="{{ hlList }}" as="p" hint-placeholder-count="2">
+      <article class="rg153 rg-hover13" onClick="{{ p.onClick }}" style="flex-direction:{{ p.dir }}">
+        <div class="rg154" style="width:{{ p.imgW }};aspect-ratio:{{ p.ratio }}"><sc-if value="{{ p.img }}" hint-placeholder-val="{{ false }}"><img class="rg14" src="{{ p.img }}" alt="{{ p.title }}"></sc-if></div>
+        <div class="rg155">
+          <div class="rg156">
+            <span class="rg51">{{ p.product }}</span>
+            <span class="rg157">·</span>
+            <span class="rg158">{{ p.location }}</span>
+          </div>
+          <h3 class="rg159">{{ p.title }}</h3>
+          <p class="rg160">{{ p.excerpt }}</p>
+          <span class="rg161">View Project →</span>
+        </div>
+      </article>
+    </sc-for>
+  </div>
+</section>
+</sc-if>
+<sc-if value="{{ hlIsDetail }}" hint-placeholder-val="{{ false }}">
+<section class="rg162">
+  <div class="rg163">
+    <button class="rg164 rg-hover14" onClick="{{ hlBack }}">← All Projects</button>
+  </div>
+</section>
+<section class="rg165">
+  <div class="rg166">
+    <div class="rg167">
+      <button class="rg168 rg-hover9" onClick="{{ hlThumbUp }}" aria-label="Previous photos">▲</button>
+      <div class="rg169">
+        <sc-for list="{{ hlThumbsV }}" as="t" hint-placeholder-count="3">
+          <button class="rg170 rg-hover15" onClick="{{ t.onClick }}" style="outline:3px solid {{ t.border }};opacity:{{ t.op }}"><img class="rg14" src="{{ t.src }}" alt=""></button>
+        </sc-for>
+      </div>
+      <button class="rg168 rg-hover9" onClick="{{ hlThumbDown }}" aria-label="More photos">▼</button>
+    </div>
+    <div class="rg171">
+      <sc-if value="{{ hlCur.mainImg }}" hint-placeholder-val="{{ false }}"><img class="rg14" src="{{ hlCur.mainImg }}" alt="{{ hlCur.title }}"></sc-if>
+      <button class="rg172 rg-hover6" onClick="{{ hlPrev }}" aria-label="Previous photo">‹</button>
+      <button class="rg173 rg-hover6" onClick="{{ hlNext }}" aria-label="Next photo">›</button>
+    </div>
+  </div>
+  <div class="rg174">
+    <div class="rg175"><span class="rg176">{{ hlCur.product }}</span><span class="rg158">Case Study · {{ hlCur.location }}</span></div>
+    <h1 class="rg177">{{ hlCur.subtitle }}</h1>
+    <div class="rg178">
+      <div><strong class="rg44">Owner:</strong> {{ hlCur.owner }}</div>
+      <div><strong class="rg44">Products Used:</strong> {{ hlCur.product }}</div>
+    </div>
+    <div class="rg179">
+      <sc-for list="{{ hlBenefits }}" as="x" hint-placeholder-count="2">
+        <div class="rg180"><span class="rg181">✓</span>{{ x }}</div>
+      </sc-for>
+    </div>
+    <a class="rg182 rg-hover9" href="{{ hlCur.url }}" target="_blank">Download Project Highlight</a>
+  </div>
+</section>
+<section class="rg183">
+  <div class="rg184">
+    <div class="rg185">
+      <h2 class="rg186">{{ hlCsHead }} <span class="rg41">{{ hlCsLast }}</span></h2>
+      <div class="rg187">
+        <sc-for list="{{ hlCsTabs }}" as="t" hint-placeholder-count="2">
+          <button class="rg188 rg-hover16" onClick="{{ t.onClick }}" style="background:{{ t.bg }};color:{{ t.color }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+      <p class="rg189">{{ hlCsBody }}</p>
+    </div>
+  </div>
+  
+</section>
+
+</sc-if>
+</sc-if>
+
+<!-- ================= CREDIT APPLICATION ================= -->
+<sc-if value="{{ isCredit }}" hint-placeholder-val="{{ false }}">
+<section class="rg80">
+  <div class="rg113">
+    <div class="rg74"><span class="rg18"></span>Industrial Fabrics, Inc.</div>
+    <h1 class="rg83">Application for <span class="rg41">Credit</span></h1>
+    <div class="rg190">
+      <div class="rg191">
+        <span class="rg192">Prefer paper?</span>
+        <span class="rg193">Download the PDF, complete it, and return it to our corporate office.</span>
+      </div>
+      <a class="rg194 rg-hover9" href="{{ creditUrl }}" target="_blank">Download PDF ↓</a>
+    </div>
+  </div>
+</section>
+<section class="rg195">
+  <div class="rg196">
+  <div class="rg197">
+    <sc-if value="{{ cnotSent }}" hint-placeholder-val="{{ true }}">
+      <div class="rg198">
+      <nav class="rg199">
+        <sc-for list="{{ csteps }}" as="s" hint-placeholder-count="6">
+          <button class="rg200 rg-hover17" type="button" onClick="{{ s.onClick }}" style="background:{{ s.rowBg }};border-left:4px solid {{ s.bar }}">
+            <span class="rg201" style="background:{{ s.bg }};color:{{ s.color }}">{{ s.n }}</span>
+            <span class="rg202" style="color:{{ s.label }}">{{ s.title }}</span>
+          </button>
+        </sc-for>
+      </nav>
+      <div class="rg203">
+      <div class="rg204">{{ cstepNum }}</div>
+      <h2 class="rg205">{{ cstepTitle }}</h2>
+      <sc-if value="{{ cNote }}" hint-placeholder-val="{{ false }}"><p class="rg206">{{ cNote }}</p></sc-if>
+      <sc-if value="{{ cIsTerms }}" hint-placeholder-val="{{ false }}">
+        <h3 class="rg207">Terms &amp; Conditions</h3>
+        <ol class="rg208">
+          <sc-for list="{{ cTerms }}" as="t" hint-placeholder-count="6"><li>{{ t.t }}</li></sc-for>
+        </ol>
+        <h3 class="rg209">Guaranty</h3>
+        <div class="rg210">
+          <sc-for list="{{ cGuaranty }}" as="g" hint-placeholder-count="4"><p class="rg43">{{ g.t }}</p></sc-for>
+        </div>
+        <h3 class="rg209">Terms &amp; General Conditions of Sale</h3>
+        <button class="rg211 rg-hover18" type="button" onClick="{{ cToggleSale }}">{{ cSaleLabel }}</button>
+        <sc-if value="{{ cShowSale }}" hint-placeholder-val="{{ false }}">
+          <ol class="rg212">
+            <sc-for list="{{ cSaleTerms }}" as="t" hint-placeholder-count="6"><li><strong class="rg44">{{ t.k }}:</strong> {{ t.t }}</li></sc-for>
+          </ol>
+        </sc-if>
+        <div class="rg213">
+          <sc-for list="{{ cAgrees }}" as="g" hint-placeholder-count="3">
+            <button class="rg214" type="button" onClick="{{ g.onClick }}">
+              <span class="rg215" style="border:2px solid {{ g.ring }};background:{{ g.box }}">{{ g.mark }}</span>{{ g.t }} *
+            </button>
+          </sc-for>
+        </div>
+        <h3 class="rg209">Guarantor</h3>
+      </sc-if>
+
+      <sc-if value="{{ cIsReview }}" hint-placeholder-val="{{ false }}">
+        <div class="rg216">
+          <sc-for list="{{ cSummary }}" as="g" hint-placeholder-count="3">
+            <div class="rg217">
+              <div class="rg218">{{ g.title }}</div>
+              <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+                <div class="rg219"><span class="rg220">{{ r.k }}</span><span class="rg221">{{ r.v }}</span></div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <div class="rg222">
+        <sc-for list="{{ cfields }}" as="f" hint-placeholder-count="8">
+          <label class="rg223" style="grid-column:{{ f.span }}">{{ f.label }}
+            <sc-if value="{{ f.isInput }}" hint-placeholder-val="{{ true }}">
+              <input class="rg224 rg-focus19" type="{{ f.type }}" value="{{ f.value }}" onChange="{{ f.onChange }}" style="border:1.5px solid {{ f.border }}">
+            </sc-if>
+            <sc-if value="{{ f.isSelect }}" hint-placeholder-val="{{ false }}">
+              <select class="rg224" value="{{ f.value }}" onChange="{{ f.onChange }}" style="border:1.5px solid {{ f.border }}">
+                <option value="">Select…</option>
+                <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="4"><option value="{{ o }}">{{ o }}</option></sc-for>
+              </select>
+            </sc-if>
+          </label>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ cIsTax }}" hint-placeholder-val="{{ false }}">
+        <p class="rg225">{{ cTaxNote }}</p>
+      </sc-if>
+      <sc-if value="{{ cIsReview }}" hint-placeholder-val="{{ false }}">
+        <p class="rg226">Typing your name above and submitting this form constitutes your electronic signature on this Application for Credit, its Guaranty, and its Terms &amp; General Conditions of Sale.</p>
+        
+      </sc-if>
+
+      <sc-if value="{{ cErrMsg }}" hint-placeholder-val="{{ false }}">
+        <div class="rg227">{{ cErrMsg }}</div>
+      </sc-if>
+
+      <div class="rg228">
+        <sc-if value="{{ cHasBack }}" hint-placeholder-val="{{ false }}">
+          <button class="rg229 rg-hover7" type="button" onClick="{{ cBack }}">← Back</button>
+        </sc-if>
+        <button class="rg230 rg-hover9" type="button" onClick="{{ cNext }}">{{ cNextLabel }}</button>
+      </div>
+      
+        </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ csent }}" hint-placeholder-val="{{ false }}">
+      <div class="rg231">
+        <div class="rg232">✓</div>
+        <h2 class="rg233">Application Submitted</h2>
+        <p class="rg234">Reference <strong class="rg44">{{ cref }}</strong>. Estimated processing time is 24–48 hours.</p>
+        <div class="rg235">
+          <div class="rg236">After You Submit</div>
+          <h3 class="rg237">Sign &amp; Return the Guaranty</h3>
+          <ol class="rg238">
+            <li>Print the Guaranty (or save it as a PDF).</li>
+            <li>Sign it by hand with an original signature.</li>
+            <li>Scan or photograph the signed page and email it to credit@ind-fab.com.</li>
+          </ol>
+          <div class="rg239">
+            <a class="rg240 rg-hover9" href="{{ cGuarantyUrl }}" target="_blank">Print Guaranty</a>
+            <a class="rg241 rg-hover7" href="mailto:credit@ind-fab.com?subject=Signed%20Guaranty%20-%20Credit%20Application">Email credit@ind-fab.com</a>
+          </div>
+        </div>
+        <button class="rg242 rg-hover7" type="button" onClick="{{ cReset }}">Start New Application</button>
+      </div>
+    </sc-if>
+  </div>
+  <div class="rg243">
+    <div class="rg236">After You Submit</div>
+    <div class="rg244">Sign &amp; Return the Guaranty</div>
+    <ol class="rg245">
+      <li>Print the Guaranty (or save it as a PDF).</li>
+      <li>Sign it by hand with an original signature.</li>
+      <li>Scan or photograph the signed page and email it to credit@ind-fab.com.</li>
+    </ol>
+    <div class="rg246">
+      <a class="rg247 rg-hover9" href="https://www.ind-fab.com/download/Industrial-Fabrics-Credit-App-Guaranty.pdf" target="_blank">Download Guaranty ↓</a>
+      <a class="rg248 rg-hover7" href="mailto:credit@ind-fab.com?subject=Signed%20Guaranty%20-%20Credit%20Application">Email credit@ind-fab.com</a>
+    </div>
+  </div>
+  </div>
+</section>
+</sc-if>
+
+<!-- ================= LUNCH & LEARN ================= -->
+<sc-if value="{{ isLunch }}" hint-placeholder-val="{{ false }}">
+<section class="rg80">
+  <div class="rg113">
+    <div class="rg74"><span class="rg18"></span>Support | Lunch &amp; Learn</div>
+    <h1 class="rg83">Join Us for <span class="rg41">Lunch!</span></h1>
+  </div>
+</section>
+<section class="rg249">
+  <div class="rg250">
+    <div class="rg251">
+      <div class="rg39"><span class="rg18"></span>The Program</div>
+      <h2 class="rg252">What Is Lunch &amp; <span class="rg41">Learn?</span></h2>
+      <p class="rg253">The program is coordinated by a RockGuard® representative. A presentation typically lasts about an hour depending on questions, and lunch is provided by our company.</p>
+    </div>
+    <div class="rg254">
+      <sc-for list="{{ lunchFaq }}" as="q" hint-placeholder-count="3">
+        <div class="rg255">
+          <span class="rg256">{{ q.n }}</span>
+          <h3 class="rg257">{{ q.q }}</h3>
+          <p class="rg258">{{ q.a }}</p>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</section>
+<section class="rg259">
+  <div class="rg260">
+    <div class="rg261">
+      <div class="rg262">Questions? Contact Us</div>
+      <p class="rg263">Have a question before submitting a request? Reach our customer service team Monday through Friday, 8:00 a.m. EST to 5:00 p.m. EST.</p>
+      <a class="rg264 rg-hover20" href="tel:+18008484500">+1 (800) 848-4500</a>
+      <span class="rg265">Toll Free</span>
+      <a class="rg266 rg-hover8" href="mailto:support@industrialfabrics.com">support@industrialfabrics.com</a>
+    </div>
+  </div>
+  <div class="rg267" ref="{{ lunchFormRef }}">
+    <sc-if value="{{ lunchNotSent }}" hint-placeholder-val="{{ true }}">
+      <div class="rg236">Request a Session</div>
+      <h2 class="rg268">Lunch &amp; Learn Request Form</h2>
+      <p class="rg206">Fill out the form below and our team will follow up to schedule your session.</p>
+      <form class="rg269" onSubmit="{{ lunchSubmit }}">
+        <sc-for list="{{ lunchFields }}" as="f" hint-placeholder-count="11">
+          <label class="rg223">{{ f.label }}
+            <sc-if value="{{ f.isInput }}" hint-placeholder-val="{{ true }}">
+              <input class="rg270 rg-focus19" name="{{ f.name }}" type="{{ f.type }}" required="{{ f.required }}" min="{{ f.min }}">
+            </sc-if>
+            <sc-if value="{{ f.isSelect }}" hint-placeholder-val="{{ false }}">
+              <select class="rg270" name="{{ f.name }}">
+                <option value="">Select a product…</option>
+                <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="3"><option value="{{ o }}">{{ o }}</option></sc-for>
+              </select>
+            </sc-if>
+          </label>
+        </sc-for>
+        <label class="rg271">Additional Notes
+          <textarea class="rg272 rg-focus19" name="notes" rows="4"></textarea>
+        </label>
+        <button class="rg273 rg-hover9" type="submit">Submit Request</button>
+      </form>
+    </sc-if>
+    <sc-if value="{{ lunchSent }}" hint-placeholder-val="{{ false }}">
+      <div class="rg274">
+        <div class="rg232">✓</div>
+        <div class="rg275">Thanks, {{ lunchName }}.</div>
+        <p class="rg276">We've received your Lunch &amp; Learn request. We'll contact you and begin working on securing a speaker.</p>
+        <button class="rg277 rg-hover7" onClick="{{ lunchReset }}">Send Another Request</button>
+      </div>
+    </sc-if>
+  </div>
+</section>
+</sc-if>
+
+<!-- ================= CONTACT ================= -->
+<sc-if value="{{ isContact }}" hint-placeholder-val="{{ false }}">
+<section class="rg80">
+  <div class="rg113">
+    <div class="rg74"><span class="rg18"></span>Get In Touch</div>
+    <h1 class="rg83">Contact <span class="rg41">Us</span></h1>
+  </div>
+</section>
+<section class="rg278">
+  <div class="rg279">
+    <sc-if value="{{ notSent }}" hint-placeholder-val="{{ true }}">
+      <div class="rg236">Send a Message</div>
+      <h2 class="rg268">Get In <span class="rg41">Touch</span></h2>
+      <p class="rg206">Fill out the form below and our team will respond promptly.</p>
+      <form class="rg269" onSubmit="{{ submit }}">
+        <sc-for list="{{ fields }}" as="f" hint-placeholder-count="10">
+          <label class="rg223" style="grid-column:{{ f.span }}">{{ f.label }}
+            <sc-if value="{{ f.isInput }}" hint-placeholder-val="{{ true }}">
+              <input class="rg270 rg-focus19" name="{{ f.name }}" type="{{ f.type }}" required="{{ f.required }}">
+            </sc-if>
+            <sc-if value="{{ f.isSelect }}" hint-placeholder-val="{{ false }}">
+              <select class="rg270" name="{{ f.name }}" required="{{ f.required }}" value="{{ f.value }}" onChange="{{ f.onChange }}">
+                <option value="">{{ f.placeholder }}</option>
+                <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="4"><option value="{{ o }}">{{ o }}</option></sc-for>
+              </select>
+            </sc-if>
+          </label>
+        </sc-for>
+        <label class="rg271">Message
+          <textarea class="rg280 rg-focus19" name="message" rows="5"></textarea>
+        </label>
+        <button class="rg281 rg-hover9" type="submit">Send Message</button>
+      </form>
+    </sc-if>
+    <sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}">
+      <div class="rg282">
+        <div class="rg232">✓</div>
+        <h3 class="rg233">Thank you, {{ sentName }}</h3>
+        <p class="rg276">Your message has been received. Our team will be in touch during office hours, Monday – Friday, 8AM – 5PM.</p>
+        <button class="rg242 rg-hover7" onClick="{{ resetForm }}">Send Another</button>
+      </div>
+    </sc-if>
+  </div>
+  <div class="rg283">
+    <h3 class="rg284">Industrial Fabrics, Inc.</h3>
+    <sc-for list="{{ offices }}" as="o" hint-placeholder-count="2">
+      <div class="rg285">
+        <div class="rg262">{{ o.title }}</div>
+        <div class="rg286">{{ o.l1 }}<br>{{ o.l2 }}</div>
+        <a class="rg287 rg-hover20" href="{{ o.tel }}">{{ o.phone }}</a>
+        <div class="rg288">Monday - Friday | 8AM - 5PM</div>
+      </div>
+    </sc-for>
+  </div>
+</section>
+</sc-if>
+
+<sc-if value="{{ notContact }}" hint-placeholder-val="{{ true }}">
+<section class="rg31">
+  <div class="rg289">
+    <h2 class="rg290">Ready to protect your next pipeline?</h2>
+    <div class="rg291">
+      <button class="rg292 rg-hover21" onClick="{{ goContact }}">Get a Quote</button>
+    </div>
+  </div>
+</section>
+</sc-if>
+</main>
+
+<footer class="rg293">
+  <div class="rg294">
+    <div class="rg295">
+      <img class="rg296" src="./images/rockguard-hd-logo-footer-white.png" alt="RockGuard HD Pipeline Protection Mesh">
+      <p class="rg297">The Rock Stops Here.™ The Standard in Pipeline Asset Protection.</p>
+      <div class="rg298">
+        <a class="rg299 rg-hover22" href="https://www.facebook.com/RockguardHD/" target="_blank">f</a>
+        <a class="rg299 rg-hover22" href="https://www.linkedin.com/company/industrial-fabrics-rockguard" target="_blank">in</a>
+      </div>
+    </div>
+    <div>
+      <div class="rg300">Products</div>
+      <div class="rg301">
+        <sc-for list="{{ productTabs }}" as="t" hint-placeholder-count="5">
+          <button class="rg302 rg-hover20" onClick="{{ t.onClick }}">{{ t.name }}</button>
+        </sc-for>
+      </div>
+    </div>
+    <div>
+      <div class="rg300">Company</div>
+      <div class="rg301">
+        <button class="rg302 rg-hover20" onClick="{{ goResources }}">Resources</button>
+        <button class="rg302 rg-hover20" onClick="{{ goContact }}">Contact Us</button>
+        <a class="rg288 rg-hover20" href="https://ind-fab.com/" target="_blank">Industrial Fabrics, Inc.</a>
+      </div>
+    </div>
+    <div>
+      <div class="rg300">Contact</div>
+      <div class="rg303">510 O'Neal Lane Ext.<br>Baton Rouge, LA 70819</div>
+      <a class="rg304 rg-hover20" href="tel:1-800-848-4500">1.800.848.4500</a>
+    </div>
+  </div>
+  <div class="rg305">
+    <div class="rg306">
+      <div>Copyright © Industrial Fabrics, Inc. All Rights Reserved.</div>
+      <img class="rg307" src="https://rockguard.biz/wp-content/uploads/2019/05/IFI-mark_for-dark-bg.png" alt="Industrial Fabrics">
+    </div>
+  </div>
+</footer>
+
+<sc-if value="{{ lightOpen }}" hint-placeholder-val="{{ false }}">
+  <div class="rg308" onClick="{{ closeLight }}">
+    <img class="rg309" src="{{ lightSrc }}" alt="Gallery">
+    <button class="rg310" onClick="{{ prevLight }}">‹</button>
+    <button class="rg311" onClick="{{ nextLight }}">›</button>
+    <div class="rg312">{{ lightLabel }} · ESC</div>
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;heroStyle&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;full&quot;,&quot;split&quot;],&quot;default&quot;:&quot;full&quot;,&quot;tsType&quot;:&quot;'full'|'split'&quot;},&quot;startPage&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;products&quot;,&quot;resources&quot;,&quot;highlights&quot;,&quot;credit&quot;,&quot;contact&quot;],&quot;default&quot;:&quot;home&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+const U = 'https://rockguard.biz/wp-content/uploads/';
+const PRODUCTS = [
+  { id: 'hd', name: 'RockGuard® HD', tag: 'Pipeline Protection Mesh', img: U + '2019/06/IMG_0097_crop.jpg', detailImg: U + '2019/05/26a.jpg',
+    summary: 'This pipeline protection mesh is an 11 mm, three dimensional bi-planar extruded diamond structured mesh rock shield manufactured from polyethylene. RockGuard® HD provides long-term protection to pipelines during backfill operations, rock migration, and even during future excavation and is a premium rock shield due to its lightweight and flexible handling — even at low temperatures.',
+    lead: 'RockGuard® HD Pipeline Protection Mesh is an 11 mm, three dimensional bi-planar extruded diamond structured mesh rock shield manufactured from polyethylene, providing long-term protection to pipelines during backfill operations, rock migration, and even during future excavation.',
+    features: [
+      ['Effective Performance in All Climates', 'Remains flexible, regardless of temperature'],
+      ['Consistent Thickness', '11 mm (greater than 3/8") throughout roll/pad'],
+      ['Does Not Interfere with Cathodic Protection', 'Open mesh design allows cathodic protection to completely protect the full circumference of the pipe'],
+      ['Initial Backfill & Long-Term Protection', "Excellent impact and compressive strength to ensure the pipe's coating integrity"],
+      ['Resists Wicking & Allows Free Water Flow', "Doesn't affect the natural movement of water"],
+      ['Lighter than the Competition', 'Ergonomically correct weight enhances safety'],
+      ['Custom Sizing', 'Quickly and easily install using RockGuard® Tape']],
+    downloads: [
+      ['Data Sheet', U + '2024/12/RGHD_Data_Sheet_12-2024.pdf', 'Data Sheet'],
+      ['Pipe Sizing Chart', U + '2024/12/RGHD_Mesh_Sizing_Chart_12-2024.pdf', 'Sizing Chart'],
+      ['Installation Methods', U + '2019/06/HDinstallation_guide.pdf', 'Installation'],
+      ['Brochure', U + '2024/12/RGHD_Brochure_12-2024.pdf', 'Brochure'],
+      ['Interactive Brochure', 'http://online.flipbuilder.com/unkh/okcb/', 'Brochure', 'WEB'],
+      ['Specifications (PDF)', U + '2019/07/Rock-Shield-Specification.pdf', 'Specification'],
+      ['Specifications (Word)', U + '2019/06/Rock-Shield-Specification.docx', 'Specification', 'DOCX'],
+      ['MSDS', U + '2019/06/RGHD-MSDS-2-1-2018.pdf', 'Safety']],
+    gallery: [1, 15, 5, 19, 17, 18, 16, 11, 7, 10, 9, 8, 6, 3, 2].map(n => U + '2019/06/RockGuard-HD-gallery-' + n + '.jpg') },
+  { id: 'pw', name: 'PipeWeights', tag: 'Geotextile Buoyancy Bags', img: U + '2019/06/mainpic_mdfy.jpg', detailImg: U + '2019/05/IMG_0779-e1560528059582.jpg',
+    summary: "This breathable, woven polypropylene geotextile bag is designed as a buoyancy control feature for the pipeline industry. PipeWeights is filled with aggregate and placed on the pipeline to provide long term buoyancy control and restricts uplift without damaging the pipe's coating.",
+    lead: 'PipeWeights is a breathable, woven polypropylene geotextile bag designed as a buoyancy control feature in the pipeline industry. It is filled with aggregate and placed on the pipeline to provide long-term buoyancy control.',
+    features: [
+      ['Restricts Uplift', "Reduces damage to the pipe's coating"],
+      ['Permeable Buoyancy Weight', 'Allows groundwater and cathodic protection an easy path'],
+      ['One of the Strongest & Most Durable on the Market', 'Resistant to acidic or basic soils'],
+      ['High Strength Geotextile Fabric', 'High quality container fully supports aggregate'],
+      ['Easy to Transport', 'Fill empty bags on the jobsite with different sized Hoppers']],
+    downloads: [
+      ['Data Sheet', U + '2019/06/pw-data-sheet.pdf', 'Data Sheet'],
+      ['Bag Sizing Chart', U + '2019/06/pw-sizing-chart.pdf', 'Sizing Chart']],
+    cases: [
+      ['Bayou Bridge', U + '2019/06/pipeweightscasestudy_bayou-bridge.pdf'],
+      ['Shin Oak', U + '2019/06/pipeweightscasestudy_hearn-texas.pdf']] },
+  { id: 'tape', acc: true, name: 'RockGuard® Tape', tag: 'Installation Tape', img: U + '2019/06/RockGuard-Tape.png', detailImg: U + '2019/06/RockGuard-Tape.png',
+    lead: 'For installing RockGuard® products.',
+    features: [['Easily install RockGuard HD'], ['3/4" filament tape'], ['Wrap circumferentially around the pipe every 6"']],
+    downloads: [['RockGuard® Tape Data Sheet', U + '2019/11/FIL_RG15_TDS.pdf', 'Data Sheet']] },
+  { id: 'hop', acc: true, name: 'PipeWeights Hoppers', tag: 'Jobsite Filling', img: U + '2019/06/Hoppers_small.jpg', detailImg: U + '2019/06/Hoppers_small.jpg',
+    lead: 'Easily pour aggregate into PipeWeights bags.',
+    features: [['Available for jobsite rental'], ['We offer on-site filling services'], ['Delivery services to lay down yard or right-of-way']],
+    downloads: [] }
+];
+const SS_IMGS = PRODUCTS[0].gallery;
+const BRANDS = [
+  ['Industrial Fabrics', 'https://ind-fab.com/', 'industrial_fabrics-logo-color-white-small'],
+  ['BaseLok', 'https://baselok.com/', 'baselok-logo-color-small'],
+  ['Envirotubes', 'https://www.envirotubes.com/', 'envirotubes-logo-color-small'],
+  ['GrassGuard', 'https://www.grassguard.biz/', 'grassguard-logo-color-small'],
+  ['GreenSolutions', 'https://www.greensolutions.us/', 'green_solutions-logo-color-small'],
+  ['RockGuard', 'https://rockguard.biz/', 'rockguard-logo-color-small']
+].map(([name, url, f]) => ({ name, url, logo: U + '2024/12/' + f + '.png' }));
+const extOf = (url, e) => e || (url.endsWith('.docx') ? 'DOCX' : 'PDF');
+const RESOURCES = [];
+PRODUCTS.forEach(p => {
+  p.downloads.forEach(d => RESOURCES.push({ label: d[0], url: d[1], type: d[2], ext: extOf(d[1], d[3]), product: p.name }));
+});
+RESOURCES.push({ label: 'RockGuard® HD Overview', url: 'https://www.youtube.com/watch?v=EjtGvn3CJL4', type: 'Video', ext: 'VIDEO', product: 'RockGuard® HD' });
+const FILTERS = ['Downloads', 'Technical Datasheets', 'Webinars', 'Videos', 'Blog Posts', 'Technical Notes'];
+const F_TYPE = { 'Technical Datasheets': ['Data Sheet'], 'Webinars': ['Webinar'], 'Videos': ['Video'], 'Blog Posts': ['Blog Post'], 'Technical Notes': ['Technical Note'] };
+const DL_TYPES = ['Sizing Chart', 'Installation', 'Brochure', 'Specification', 'Safety'];
+const REQ = ['Request Quote'];
+const US_STATES = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','District of Columbia','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
+const CA_PROV = ['Alberta','British Columbia','Manitoba','New Brunswick','Newfoundland and Labrador','Nova Scotia','Ontario','Prince Edward Island','Quebec','Saskatchewan','Northwest Territories','Nunavut','Yukon'];
+const MX_STATES = ['Aguascalientes','Baja California','Baja California Sur','Campeche','Chiapas','Chihuahua','Coahuila','Colima','Durango','Guanajuato','Guerrero','Hidalgo','Jalisco','Mexico City','México','Michoacán','Morelos','Nayarit','Nuevo León','Oaxaca','Puebla','Querétaro','Quintana Roo','San Luis Potosí','Sinaloa','Sonora','Tabasco','Tamaulipas','Tlaxcala','Veracruz','Yucatán','Zacatecas'];
+const NAV = [['home', 'Home'], ['products', 'Products'], ['resources', 'Resources'], ['highlights', 'Project Highlights'], ['support', 'Support', [['contact', 'Contact Us'], ['credit', 'Credit Application'], ['lunch', 'Lunch & Learn']]]];
+const PAGES = [['home', 'Home'], ['products', 'Products'], ['resources', 'Resources'], ['highlights', 'Project Highlights'], ['credit', 'Credit Application'], ['contact', 'Contact Us'], ['lunch', 'Lunch & Learn']];
+const CREDIT_URL = U + '2025/09/Industrial-Fabrics-Credit-App-FGB_8-8-25.pdf';
+const SEL = { btype: ['Proprietorship', 'Partnership', 'Corporation'], po: ['Yes', 'No'], exall: ['Yes', 'No'], exsome: ['Yes', 'No'], products: ['RockGuard® HD', 'PipeWeights', 'Accessories', 'Multiple Products'] };
+const ref = n => [['r' + n + 'co', 'Reference ' + n + ' — Company Name', n === 1, 'text', 2], ['r' + n + 'em', 'Email', false, 'email'], ['r' + n + 'ph', 'Phone', false, 'tel']];
+const CSTEPS = [
+  { title: 'Business Information', fields: [['company', 'Company Name', false, 'text', 2], ['sales', 'Salesperson'], ['products', 'Products', false, 'select'], ['addr', 'Address', false, 'text', 2], ['country', 'Country'], ['state', 'State'], ['city', 'City'], ['zip', 'Zip'], ['county', 'County / Parish'], ['started', 'Date Started', false, 'date'], ['maddr', 'Mailing Address (if different)', false, 'text', 2], ['mcity', 'Mailing City'], ['mstate', 'Mailing State'], ['mzip', 'Mailing Zip'], ['phone', 'Phone', false, 'tel'], ['fax', 'Fax', false, 'tel'], ['owners', 'Full Name of Owner(s)', false, 'text', 2], ['taxid', 'Federal Tax ID'], ['duns', 'D.U.N.S. #'], ['acct', 'Accounting Contact'], ['email', 'Email Address', false, 'email'], ['btype', 'Business Type', false, 'select'], ['amount', 'Amount of Credit Requested'], ['po', 'Are Purchase Orders Required From Your Company?', false, 'select', 2]] },
+  { title: 'Credit References', note: 'Please provide at least one trade reference.', fields: [...ref(1), ...ref(2), ...ref(3)] },
+  { title: 'Bank Information', fields: [['bank', 'Name of Bank', false, 'text', 2], ['bphone', 'Bank Phone', false, 'tel'], ['bacct', 'Account #'], ['bcontact', 'Bank Contact', false, 'text', 2], ['baddr', 'Bank Address', false, 'text', 2], ['bcity', 'Bank City'], ['bstate', 'Bank State'], ['bzip', 'Bank Zip']] },
+  { title: 'Sales Tax Exemption', fields: [['taxbiz', 'Type of Business', false, 'text', 2], ['exall', 'I am exempt from sales tax on ALL purchases', false, 'select', 2], ['exsome', 'I am exempt from sales tax on SOME purchases', false, 'select', 2]] },
+  { title: 'Terms & Guaranty', fields: [['gname', 'Owner / Guarantor Print Name'], ['gtitle', 'Guarantor Title']] },
+  { title: 'Signature', fields: [['sname', 'Print Name', true], ['stitle', 'Title', true], ['sig', 'Type Full Name as Signature', true, 'text', 2]] }];
+const TAX_NOTE = 'If exempt, a signed Tax Exempt Certificate for each applicable state must be provided with this application, and a current certificate will be required with every order prior to delivery. Sales tax will not be refunded if a current exempt certificate is not provided prior to delivery of merchandise.';
+const TERMS = ['This application is submitted by the undersigned ("Applicant") to obtain a credit account with Industrial Fabrics, Inc. All representations are accurate, complete, and truthful to the best of the Applicant\'s knowledge.', 'The Applicant authorizes any credit reference listed to disclose to Industrial Fabrics, Inc., orally or in writing, any information pertinent to this application.', 'If the Applicant is a corporation, the undersigned affirms they are authorized to make this application on the corporation\'s behalf and to obligate it for any credit extended as a result.', 'Any Financial Statement submitted with this application, or as later requested, will be accurate, complete, and truthful.', 'Credit extended is due when billed. Amounts unpaid after thirty (30) days are subject to a finance charge of 1.5% per month (18% annual rate), to the extent permitted by law.', 'If an unpaid account is placed with an attorney for collection, Applicant agrees to pay an additional twenty-five percent (25%) of principal and interest as attorney\'s fees, plus court costs.', 'Industrial Fabrics, Inc. disclaims all warranties, express or implied, including merchantability and fitness for purpose. Materials and equipment are sold "as is, where as," except as expressly stated in a separate written limited warranty.', 'Venue: for goods sold in Texas, Houston, Harris County, Texas; for all other transactions, East Baton Rouge Parish, Louisiana.', 'The laws of Louisiana and Texas govern the construction of any transaction between Industrial Fabrics, Inc., Applicant, and Guarantor.', 'Applicant grants Industrial Fabrics, Inc. a purchase money security interest in all materials and equipment sold, and authorizes it to file a financing statement evidencing that interest.', 'Notice to Applicant: do not sign this agreement until you have read it. You are entitled to a copy of the signed agreement.'];
+const GUARANTY = ['For value received, the undersigned personally, primarily, and individually guarantees payment of all amounts due and owing by Applicant to Industrial Fabrics, Inc., including principal, interest, attorney fees, and costs.', 'This guaranty remains valid and enforceable as to all indebtedness now existing or later incurred by Applicant until ten (10) days after Industrial Fabrics, Inc. receives written notice from the undersigned terminating it. To the extent not prohibited by law, the Guarantor waives all notices and defenses, including impairment of collateral.', 'The Guarantor agrees they may be sued without the need to join the Applicant.', 'Original signature required. The Guaranty must be signed by hand. After submitting this application, use the Print Guaranty button, sign it, and email the signed copy to credit@ind-fab.com.'];
+const SALE_TERMS = [['Quotations', 'Price lists and quotations are valid for thirty (30) days and subject to change without notice thereafter. Special-order quotations are firm for acceptance within forty-five (45) days. Accepted Purchase Order pricing is firm for shipment within ninety (90) days, after which unshipped units are subject to invoicing and 5% per month storage charges.'], ['Payment Terms', 'Purchases other than cash are subject to credit approval. Open account payments are due Net 30 from invoice date. No retainage is allowed. Amounts unpaid after the due date accrue interest at 18% APR, plus collection costs.'], ['Deliveries', 'Delivery requests should be placed at least 24 working hours in advance. Deliveries are scheduled first-come, first-served.'], ['Taxes', 'All applicable taxes at time of shipment are paid by Buyer. Buyer is responsible for providing a tax-exemption certificate with its Purchase Order if a project is tax exempt.'], ['Transportation', 'Transportation costs not included in FOB destination pricing are paid by Buyer. Unloading time is limited to one hour; additional time is billed at $65.00/hour. Buyer or its representative must be present to sign the delivery ticket.'], ['Returns', 'Returned products are subject to inspection; credit is issued only for standard stock items in resalable condition, less a 25% restocking charge, within ninety (90) days of purchase. No credit is allowed on custom or special-order products.'], ['Estimates', 'Industrial Fabrics, Inc. assumes no responsibility for the accuracy of Buyer\'s requirement estimates; Buyer must supply exact order quantities.'], ['Special and Custom Orders', 'Signed Purchase Orders with exact quantities are required and, once accepted, are not cancelable. Quoted prices are based on estimated quantities; orders for lesser total quantities are subject to price adjustment.'], ['Quality and Claims', 'Products are guaranteed to conform only to specifications quoted or published at time of shipment. Buyer must inspect products on delivery and note visible damage on the carrier\'s Bill of Lading. Industrial Fabrics, Inc. must be notified of any dissatisfaction before installation begins; use of the product constitutes acceptance.'], ['Force Majeure', 'Industrial Fabrics, Inc. is not liable for failure or delay in performance due to causes beyond its control (acts of God, war, strikes, shortages, and similar events), and shall not be liable for incidental or consequential damages under any circumstances.'], ['Preliminary Notices', 'Buyer agrees to furnish all information Industrial Fabrics, Inc. needs to timely file a Preliminary Notice on any construction project for which it is furnishing labor and/or materials.']];
+const AGREES = [['agT', 'I have read and agree to the Terms & Conditions above, and attest to my financial responsibility, ability, and willingness to pay invoices under NET 30 DAY terms.'], ['agG', 'I have read and agree to the Guaranty above.'], ['agS', 'I have read and agree to the Terms & General Conditions of Sale above.']];
+const GUARANTY_URL = 'https://www.ind-fab.com/download/Industrial-Fabrics-Credit-App-Guaranty.pdf';
+const PW_IMGS = [U + '2019/06/mainpic_mdfy.jpg', U + '2019/05/IMG_0779-e1560528059582.jpg', U + '2019/06/Hoppers_small.jpg', U + '2019/05/hotgirl_small.jpg'];
+const HIGHLIGHTS = [
+  { title: 'Bayou Bridge', excerpt: 'Considering the high demand of petroleum products by America every day, this 163 mile, 24 inch Bayou Bridge pipeline will help maintain future growth by connecting several crude hubs between Lake Charles and St. James, Louisiana. Once completed, the pipeline will be able to transport 480 thousand barrels of light and heavy crude oil each day.', subtitle: 'Bayou Bridge Pipeline', location: 'Belle Rose, Louisiana', years: 'April 2018 – Present', owner: 'Energy Transfer and Phillips 66', contractor: 'Sunland Construction', benefits: ['Uplift Prevention', 'Pipe Coating Protection'], supplier: 'Industrial Fabrics, Inc.', tech: [['Product', 'PipeWeights'], ['Bag', '24” pipe bag'], ['Weight', '5,000 lbs'], ['Fill', 'Sand'], ['Quantity', 'Ongoing'], ['Installed', 'April 2018 – Present']], product: 'PipeWeights', img: PW_IMGS[0], images: PW_IMGS, url: U + '2019/06/pipeweightscasestudy_bayou-bridge.pdf',
+    challenge: 'Due to low elevations and swampy wetland environments in this region, underground pipelines are susceptible to being moved and broken by groundwater conditions, buoyancy issues, and other factors.',
+    solution: 'By using PipeWeights, the pipes were held safely in place and uplift was prevented while keeping the pipe’s coating intact. PipeWeights is a woven polypropylene geotextile bag to be filled with an aggregate, in this case sand, and placed on pipelines. It is designed as a buoyancy control feature, providing a permeable path for ground water and cathodic protection.' },
+  { title: 'Shin Oak', excerpt: 'The 571 mile Shin Oak pipeline project consisted of eight (8) spreads. This particular pipeline will carry mixed NGLs from the Permian/Delaware Basin gas processing facilities near Orla, Texas to Mont Belvieu, Texas. The intended in-service date is the second quarter of 2019. This project intends to almost double the total NGL volumes by connecting incremental NGLs from the Permian/Delaware Basin to the large petrochemical and refining markets along the Gulf Coast.', subtitle: 'Shin Oak NGL 24” Pipeline Project', location: 'Hearne, Texas', years: 'Completed August 2018', owner: 'Enterprise Products', contractor: 'Troy Construction', benefits: ['Buoyancy Control in Wet Areas'], supplier: 'Industrial Fabrics, Inc.', tech: [['Product', 'PipeWeights'], ['Bag', '24” pipe bag'], ['Weight', '5,000 lbs'], ['Fill', 'Sandy Pea Gravel'], ['Quantity', '708'], ['Completed', 'August 2018']], product: 'PipeWeights', img: PW_IMGS[1], images: [PW_IMGS[1], PW_IMGS[2], PW_IMGS[0], PW_IMGS[3]], url: U + '2019/06/pipeweightscasestudy_hearn-texas.pdf',
+    challenge: 'Buoyancy control products are necessary to use when installing pipelines in wetland areas, stream or creek crossings, and areas with high water table. These wet conditions could result in the pipeline producing a buoyant force greater than the gravity forces from the soil above it. Thus causing critical damage as the pipeline shifts and floats upward. Such conditions existed along spread six (6) of the Shin Oak pipeline project near Hearne, TX.',
+    solution: 'Placed a pre-determined amount of weight onto the pipeline preventing uplift of the pipeline. In spread six (6), a wet area, it was determined 708 5000 lb. buoyancy control bags were needed. The PipeWeights bags produced a downward force on the pipeline which overcame the buoyant force.' }];
+
+class Component extends DCLogic {
+  state = { ss: 0, ssPaused: false, page: this.props.startPage || 'home', product: localStorage.getItem('rg_product') || 'hd', filter: 'Downloads', reqType: 'Request Quote', sent: false, sentName: '', light: -1 };
+  componentDidMount() {
+    this.onKey = e => {
+      if (this.state.light < 0) return;
+      if (e.key === 'Escape') this.setState({ light: -1 });
+      if (e.key === 'ArrowRight') this.step(1);
+      if (e.key === 'ArrowLeft') this.step(-1);
+    };
+    window.addEventListener('keydown', this.onKey);
+    this.ssTimer = setInterval(() => { if (!this.state.ssPaused && this.state.page === 'home') this.setState(s => ({ ss: Math.min(s.ss + 1, SS_IMGS.length) })); }, 4000);
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this.onKey); clearInterval(this.ssTimer); }
+  go(page, product) {
+    const s = { page };
+    if (page === 'highlights') s.hlMode = 'list';
+    if (product) { s.product = product; localStorage.setItem('rg_product', product); }
+    localStorage.setItem('rg_page', page);
+    this.setState(s);
+    window.scrollTo({ top: 0 });
+  }
+  hlVals() {
+    const i = this.state.hl || 0, im = this.state.hlImg || 0, acc = this.state.hlAcc || {};
+    const h = HIGHLIGHTS[i], n = h.images.length;
+    const toggle = k => () => this.setState(s => ({ hlAcc: { ...(s.hlAcc || {}), [k]: !(s.hlAcc || {})[k] } }));
+    const pick = j => () => { this.setState({ hl: j, hlImg: 0, hlAcc: {}, hlMode: 'detail' }); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+    const cat = 'All', q = (this.state.hlQ || '').toLowerCase(), view = this.state.hlView || 'grid';
+    const list = HIGHLIGHTS.map((x, j) => ({ ...x, j })).filter(x => (cat === 'All' || x.product === cat) && (!q || (x.title + ' ' + x.location + ' ' + x.excerpt + ' ' + x.product).toLowerCase().includes(q)));
+    return {
+      hlIsList: this.state.hlMode !== 'detail', hlIsDetail: this.state.hlMode === 'detail',
+      hlBack: () => { this.setState({ hlMode: 'list' }); window.scrollTo({ top: 0 }); },
+      hlCats: ['All', ...PRODUCTS.map(p => p.name)].map(c => ({ label: c, onClick: () => this.setState({ hlCat: c }), bg: c === cat ? '#de4228' : 'transparent', color: c === cat ? '#fff' : '#2c2e35' })),
+      hlQuery: this.state.hlQ || '', hlSearch: e => this.setState({ hlQ: e.target.value }),
+      hlModes: [['grid', '▦'], ['list', '☰']].map(([k, icon]) => ({ icon, onClick: () => this.setState({ hlView: k }), bg: k === view ? '#2c2e35' : '#fff', color: k === view ? '#fff' : '#2c2e35' })),
+      hlGridCols: view === 'grid' ? 'repeat(auto-fill,minmax(min(100%,260px),1fr))' : '1fr', hlGap: view === 'grid' ? '16px' : '10px', hlCount: list.length + (list.length === 1 ? ' project' : ' projects'),
+      hlEmpty: list.length === 0,
+      hlList: list.map(x => ({ title: x.title, product: x.product, location: x.location, excerpt: x.excerpt, img: x.img, onClick: pick(x.j), dir: view === 'grid' ? 'column' : 'row', imgW: view === 'grid' ? '100%' : 'min(30%,200px)', ratio: view === 'grid' ? '16/9' : '4/3' })),
+      hlCur: { ...h, mainImg: h.images[im] },
+      hlDots: h.images.map((_, j) => ({ onClick: () => this.setState({ hlImg: j }), bg: j === im ? '#fff' : 'rgba(255,255,255,.45)', w: j === im ? '22px' : '8px' })),
+      hlThumbs: h.images.map((src, j) => ({ src, onClick: () => this.setState({ hlImg: j }), border: j === im ? '#de4228' : 'transparent', op: j === im ? '1' : '.65' })),
+      hlPrev: () => this.setState({ hlImg: (im - 1 + n) % n }),
+      hlNext: () => this.setState({ hlImg: (im + 1) % n }),
+      hlAccs: [{ k: 'c', title: "Client's Challenge", body: h.challenge }, { k: 's', title: 'RockGuard® Engineered Solution', body: h.solution }].map(a => ({ ...a, open: !!acc[a.k], icon: acc[a.k] ? '–' : '+', onClick: toggle(a.k) })),
+      hlCounter: String(i + 1).padStart(2, '0') + ' / ' + String(HIGHLIGHTS.length).padStart(2, '0'),
+      hlTabs: HIGHLIGHTS.map((x, j) => ({ title: x.title, location: x.location, img: x.img, onClick: pick(j), border: j === i ? '#de4228' : 'transparent', label: j === i ? 'Viewing' : 'View Project', op: j === i ? '1' : '.85' })),
+      hlImgCount: (im + 1) + ' / ' + n,
+      ...(() => { const vis = Math.min(3, n), start = Math.min(this.state.hlTs || 0, Math.max(0, n - vis));
+        return { hlThumbsV: h.images.slice(start, start + vis).map((src, k) => ({ src, onClick: () => this.setState({ hlImg: start + k }), border: start + k === im ? '#de4228' : 'transparent', op: start + k === im ? 1 : .7 })),
+          hlThumbUp: () => this.setState({ hlTs: Math.max(0, start - 1) }), hlThumbDown: () => this.setState({ hlTs: Math.min(Math.max(0, n - vis), start + 1) }),
+          hlBenefits: h.benefits || [] }; })(),
+      hlThumbsSide: h.images.map((src, j) => ({ src, j })).filter(t => t.j !== im).slice(0, 3).map(t => ({ src: t.src, onClick: () => this.setState({ hlImg: t.j }), border: 'transparent', op: .85 })),
+      ...(() => { const words = (h.product + ' – ' + h.title).split(' '); const tab = this.state.hlCs || 'challenge';
+        return { hlCsHead: words.slice(0, -1).join(' '), hlCsLast: words[words.length - 1], hlCsBody: tab === 'challenge' ? h.challenge : h.solution,
+          hlCsTabs: [['challenge', "Client's Challenge"], ['solution', 'RockGuard® Solution']].map(([k, label]) => ({ label, onClick: () => this.setState({ hlCs: k }), bg: tab === k ? '#de4228' : 'transparent', color: tab === k ? '#fff' : '#2c2e35' })) }; })(),
+      hlTeam: [['Owner', h.owner], ['Contractor', h.contractor], ['Supplier', h.supplier], ['Location', h.location]].filter(x => x[1]).map(([k, v]) => ({ k, v })),
+      hlTech: (h.tech || []).map(([k, v]) => ({ k, v })),
+      hlOthers: HIGHLIGHTS.map((x, j) => ({ title: x.title, location: x.location, img: x.img, onClick: pick(j), j })).filter(x => x.j !== i),
+      hlPrevProj: pick((i - 1 + HIGHLIGHTS.length) % HIGHLIGHTS.length),
+      hlNextProj: pick((i + 1) % HIGHLIGHTS.length)
+    };
+  }
+  creditVals() {
+    const cf = this.state.cf || {}, st = this.state.cstep || 0, showErr = !!this.state.cerr, last = CSTEPS.length - 1;
+    const step = CSTEPS[st];
+    const missing = s => CSTEPS[s].fields.filter(f => f[2] && !String(cf[f[0]] || '').trim()).map(f => f[0]);
+    const unagreed = AGREES.filter(x => !cf[x[0]]).map(x => x[0]);
+    const setF = (k, v) => this.setState(s => ({ cf: { ...(s.cf || {}), [k]: v } }));
+    const miss = showErr ? missing(st) : [];
+    const fields = step.fields.map(([key, label, req, type = 'text', span = 1]) => {
+      const err = miss.includes(key);
+      return { key, label: label + (req ? ' *' : ''), type, isSelect: type === 'select', isInput: type !== 'select', options: SEL[key] || [], value: cf[key] || '', span: span === 2 ? '1 / -1' : 'auto', border: err ? '#de4228' : '#d9c7af', onChange: e => setF(key, e.target.value) };
+    });
+    const summary = st === last ? CSTEPS.slice(0, 4).map(s => ({ title: s.title, rows: s.fields.filter(f => cf[f[0]]).map(f => ({ k: f[1].replace(' — Company Name', ''), v: cf[f[0]] })) })).filter(g => g.rows.length) : [];
+    const showSale = !!this.state.cSale;
+    return {
+      csent: !!this.state.csent, cnotSent: !this.state.csent, cref: this.state.cref || '',
+      csteps: CSTEPS.map((s, i) => ({ n: i + 1, title: s.title, rowBg: i === st ? '#faf4ec' : 'transparent', bar: i === st ? '#de4228' : 'transparent', bg: i === st ? '#de4228' : i < st ? '#2c2e35' : '#e9ddcc', color: i <= st ? '#fff' : '#8b5a3c', label: i === st ? '#2c2e35' : '#8b5a3c', onClick: () => this.setState({ cstep: i, cerr: false }) })),
+      cstepTitle: step.title, cstepNum: 'Section ' + (st + 1) + ' of ' + CSTEPS.length, cfields: fields, cNote: step.note || '',
+      cIsTax: st === 3, cTaxNote: TAX_NOTE, cIsTerms: st === 4,
+      cTerms: TERMS.map((t, i) => ({ n: i + 1, t })), cGuaranty: GUARANTY.map(t => ({ t })),
+      cSaleTerms: SALE_TERMS.map(([k, t], i) => ({ n: i + 1, k, t })), cShowSale: showSale, cSaleLabel: showSale ? 'Hide Terms & General Conditions of Sale' : 'Show full Terms & General Conditions of Sale',
+      cToggleSale: () => this.setState({ cSale: !showSale }),
+      cAgrees: AGREES.map(([k, t]) => ({ t, box: cf[k] ? '#de4228' : '#fff', mark: cf[k] ? '✓' : '', ring: showErr && st === last && !cf[k] ? '#de4228' : '#2c2e35', onClick: () => setF(k, !cf[k]) })),
+      cIsReview: st === last, cHasBack: st > 0, cNextLabel: st === last ? 'Submit Application' : 'Continue →',
+      cErrMsg: showErr ? (miss.length ? 'Please complete the highlighted required fields.' : unagreed.length ? 'Please accept the three agreements in Section 5 (Terms & Guaranty) to submit.' : '') : '',
+      cSummary: summary, cGuarantyUrl: GUARANTY_URL,
+      cBack: () => this.setState({ cstep: st - 1, cerr: false }),
+      cNext: () => {
+        if (st === last && (missing(st).length || unagreed.length)) return this.setState({ cerr: true });
+        if (st === last) return this.setState({ csent: true, cerr: false, cref: 'IFI-' + Math.floor(100000 + Math.random() * 900000) });
+        this.setState({ cstep: st + 1, cerr: false }); window.scrollTo({ top: 0 });
+      },
+      cReset: () => this.setState({ cf: {}, cstep: 0, cerr: false, csent: false })
+    };
+  }
+
+  step(d) {
+    const g = PRODUCTS[0].gallery.length;
+    this.setState(s => ({ light: (s.light + d + g) % g }));
+  }
+  renderVals() {
+    const { page, product, filter, reqType, sent, light } = this.state;
+    const hero = this.props.heroStyle ?? 'full';
+    const ACCS = PRODUCTS.filter(x => x.acc);
+    const isAcc = product === 'acc' || ACCS.some(x => x.id === product);
+    const p = isAcc ? { name: 'Accessories', tag: 'Installation & Jobsite', lead: '', detailImg: '', downloads: [], features: ACCS.flatMap(x => x.features) } : (PRODUCTS.find(x => x.id === product) || PRODUCTS[0]);
+    const open = id => () => this.go('products', id);
+    const card = x => ({ ...x, open: open(x.id) });
+    const sub = this.state.sub || 'All Downloads';
+    const prod = this.state.prod || 'All Products';
+    const fil = FILTERS.includes(filter) ? filter : 'Downloads';
+    const byType = fil === 'Downloads' ? RESOURCES.filter(r => sub === 'All Downloads' ? DL_TYPES.includes(r.type) : r.type === sub)
+      : RESOURCES.filter(r => F_TYPE[fil].includes(r.type));
+    const PGROUPS = [['All Products', null, U + '2019/06/IMG_0097_crop.jpg'], ['RockGuard® HD', ['RockGuard® HD'], U + '2019/06/RockGuard-HD-gallery-5.jpg'], ['PipeWeights', ['PipeWeights'], U + '2019/06/mainpic_mdfy.jpg'], ['Accessories', PRODUCTS.filter(x => x.acc).map(x => x.name), U + '2019/06/Hoppers_small.jpg']];
+    const grp = PGROUPS.find(g => g[0] === prod) || PGROUPS[0];
+    const inGrp = (g, r) => !g[1] || g[1].includes(r.product);
+    const filtered = byType.filter(r => inGrp(grp, r));
+    const prodNames = ['All Products', ...PRODUCTS.map(x => x.name)];
+    return {
+      page, isHome: page === 'home', isProducts: page === 'products', isResources: page === 'resources', isContact: page === 'contact', isHighlights: page === 'highlights', isCredit: page === 'credit', highlights: HIGHLIGHTS, creditUrl: CREDIT_URL, notContact: page !== 'contact',
+      heroFull: hero === 'full', heroSplit: hero === 'split',
+      showBrandBar: this.props.showBrandBar ?? true,
+      brands: BRANDS,
+      nav: NAV.map(([id, label, kids]) => { const on = kids ? kids.some(k => k[0] === page) : page === id; return { label, hasMenu: !!kids, open: !!kids && this.state.menu === id,
+        enter: () => kids && this.setState({ menu: id }), leave: () => kids && this.setState({ menu: null }),
+        onClick: () => kids ? this.setState(s => ({ menu: s.menu === id ? null : id })) : this.go(id),
+        items: (kids || []).map(([kid, kl]) => ({ label: kl, onClick: () => { this.setState({ menu: null }); this.go(kid); }, color: page === kid ? '#de4228' : '#2c2e35', bg: page === kid ? '#faf4ec' : '#fff' })),
+        color: on ? '#111111' : '#6b4a35', line: on ? '#de4228' : 'transparent' }; }),
+      isLunch: page === 'lunch', lunchSent: !!this.state.lunchSent, lunchNotSent: !this.state.lunchSent, lunchName: this.state.lunchName || '',
+      lunchFields: [['First Name', 'first', 'text', true], ['Last Name', 'last', 'text', true], ['Title', 'title', 'text', true], ['Company / Firm', 'company', 'text', true], ['Phone', 'phone', 'tel', true], ['Email', 'email', 'email', true], ['Country', 'country', 'text', true], ['State / Province', 'state', 'text', false], ['City', 'city', 'text', false], ['Number Attending', 'attending', 'number', true], ['Preferred Date', 'date', 'date', false], ['Products', 'products', 'select', false]].map(([l, name, type, req]) => ({ label: l + (req ? ' *' : ''), name, type, required: req, min: type === 'number' ? '1' : undefined, isSelect: type === 'select', isInput: type !== 'select', options: ['RockGuard® HD', 'PipeWeights', 'Accessories'] })),
+      lunchFaq: [['Who Can Participate?', "Engineers, designers, and anyone looking to learn more about RockGuard® pipeline protection products can participate — including anyone who would like to continue their education and earn Professional Development Hours (PDHs)."], ['When Can I Schedule an Event?', 'Programs are typically scheduled over the lunch hour, but exceptions can be made for breakfast or dinner, depending on what works best for your company.'], ['How Do I Request One?', "Complete and submit the Lunch & Learn Request Form. Once we receive your request, we'll contact you and begin working on securing a speaker."]].map(([q, a], i) => ({ n: String(i + 1).padStart(2, '0'), q, a })),
+      lunchFormRef: el => { this.lunchEl = el; },
+      lunchJump: () => { if (this.lunchEl) window.scrollTo({ top: this.lunchEl.getBoundingClientRect().top + window.scrollY - 110, behavior: 'smooth' }); },
+      lunchSubmit: e => { e.preventDefault(); const n = new FormData(e.target).get('first') || ''; this.setState({ lunchSent: true, lunchName: String(n).split(' ')[0] }); },
+      lunchReset: () => this.setState({ lunchSent: false }),
+      goHome: () => this.go('home'), goProducts: () => this.go('products'), goResources: () => this.go('resources'), goContact: () => this.go('contact'), openHD: open('hd'),
+      stats: [{ v: '11 mm', l: 'Consistent thickness' }, { v: '75+', l: 'Midstream approvals' }, { v: '45+', l: 'Contractor approvals' }, { v: '1981', l: 'Serving the pipeline industry' }],
+      mainProducts: PRODUCTS.slice(0, 2).map(card).map(x => ({ ...x, homeImg: x.id === 'hd' ? U + '2019/06/RockGuard-HD-gallery-1.jpg' : x.img, ratio: '16/9' })),
+      relatedProducts: PRODUCTS.slice(2).map(card),
+      whyList: ['Consistent 11 mm thickness', 'Does not interfere with cathodic protection', 'Ergonomically lightweight', 'Protects during backfill operations and provides long-term protection from geologic movement, pipeline vibration and future excavation', 'Custom sizing for rolls or pads', 'Superior customer service', 'Fastest delivery nationwide'],
+      whyItems: ['Consistent 11 mm thickness', 'Does not interfere with cathodic protection', 'Ergonomically lightweight', 'Protects during backfill operations and provides long-term protection from geologic movement, pipeline vibration and future excavation', 'Custom sizing for rolls or pads', 'Superior customer service and fastest delivery nationwide'].map((t, i) => ({ n: String(i + 1).padStart(2, '0'), t })),
+      featuredResources: [RESOURCES[0], RESOURCES[1], RESOURCES[2], RESOURCES[3]],
+      productTabs: [...PRODUCTS.filter(x => !x.acc).map(x => [x.id, x.name, x.id === product]), ['acc', 'Accessories', isAcc]].map(([id, name, on]) => ({ name, onClick: open(id), bg: on ? '#f5ebdd' : 'rgba(255,255,255,.06)', color: on ? '#2c2e35' : '#d6c6b2' })),
+      isAcc, notAcc: !isAcc,
+      accItems: ACCS.map(x => ({ name: x.name, tag: x.tag, lead: x.lead, desc: ({ tape: 'is a 3/4" filament tape made for installing RockGuard® products. It makes RockGuard® HD easy to install — simply wrap it circumferentially around the pipe every 6".', hop: 'make it easy to pour aggregate into PipeWeights bags. Hoppers are available for jobsite rental, and we also offer on-site filling services and delivery to the lay down yard or right-of-way.' })[x.id] || x.lead, dataSheet: x.downloads[0] ? x.downloads[0][1] : '' })),
+      accCollage: [
+        { src: U + '2019/06/RockGuard-Tape.png', alt: 'RockGuard Tape', fit: 'contain', pad: '18px' },
+        { src: U + '2019/06/Hoppers_small.jpg', alt: 'PipeWeights Hoppers', fit: 'cover', pad: '0' }
+      ],
+      accessories: PRODUCTS.filter(x => x.acc).map(x => ({ name: x.name, tag: x.tag, lead: x.lead, img: x.detailImg, dataSheet: x.downloads[0] ? x.downloads[0][1] : '', features: x.features.map((f, i) => ({ n: String(i + 1).padStart(2, '0'), t: f[0] })) })),
+      ssSlides: [...SS_IMGS, ...SS_IMGS.slice(0, 3)].map(src => ({ src })),
+      ssOffset: (-this.state.ss * 100 / 3) + '%',
+      ssTrans: this.state.ssNoAnim ? 'none' : 'transform .9s cubic-bezier(.65,0,.35,1)',
+      ssEnd: () => { if (this.state.ss >= SS_IMGS.length) { this.setState({ ss: 0, ssNoAnim: true }); requestAnimationFrame(() => requestAnimationFrame(() => this.setState({ ssNoAnim: false }))); } },
+      ssThumbs: SS_IMGS.map((src, j) => ({ src, onClick: () => this.setState({ ss: j }), op: j === this.state.ss % SS_IMGS.length ? 1 : .55, ring: j === this.state.ss % SS_IMGS.length ? '#de4228' : 'transparent' })),
+      ssCounter: String(this.state.ss % SS_IMGS.length + 1).padStart(2, '0') + ' / ' + String(SS_IMGS.length).padStart(2, '0'),
+      ssProgress: ((this.state.ss % SS_IMGS.length + 1) / SS_IMGS.length * 100) + '%',
+      ssPrev: () => { if (this.state.ss === 0) { this.setState({ ss: SS_IMGS.length, ssNoAnim: true }); requestAnimationFrame(() => requestAnimationFrame(() => this.setState({ ss: SS_IMGS.length - 1, ssNoAnim: false }))); } else this.setState(s => ({ ss: s.ss - 1 })); },
+      ssNext: () => this.setState(s => ({ ss: Math.min(s.ss + 1, SS_IMGS.length) })),
+      ssPause: () => this.setState({ ssPaused: true }), ssResume: () => this.setState({ ssPaused: false }),
+      cur: {
+        name: p.name, tag: p.tag, lead: p.lead, detailImg: p.detailImg,
+        dataSheet: p.downloads[0] ? p.downloads[0][1] : '',
+        openResources: () => { this.setState({ prod: p.name, filter: 'Downloads' }); this.go('resources'); },
+        featCount: String(p.features.length).padStart(2, '0'),
+        features: p.features.map((f, i) => ({ n: String(i + 1).padStart(2, '0'), t: f[0], d: f[1] || '' })),
+        downloads: p.downloads.map(d => ({ label: d[0], url: d[1], ext: extOf(d[1], d[3]) })),
+        hasDownloads: p.downloads.length > 0,
+        cases: (p.cases || []).map(c => ({ label: c[0], url: c[1] })),
+        hasCases: !!p.cases,
+        hasGallery: !!p.gallery,
+        gallery: (p.gallery || []).map((src, i) => ({ src, open: () => this.setState({ light: i }) }))
+      },
+      filters: FILTERS.map(f => ({ label: f, onClick: () => this.setState({ filter: f }), line: f === fil ? '#de4228' : 'transparent', color: f === fil ? '#de4228' : '#6b4a35' })),
+      prodTitle: grp[0],
+      isDownloads: filter === 'Downloads',
+      subFilters: ['All Downloads', ...DL_TYPES].map(f => ({ label: f, onClick: () => this.setState({ sub: f }), color: f === sub ? '#fff' : '#6b4a35', bg: f === sub ? '#de4228' : '#e9ddcc' })),
+      filteredResources: filtered,
+      noResults: filtered.length === 0, emptyMsg: 'No ' + fil.toLowerCase() + ' available for ' + (grp[0] === 'All Products' ? 'RockGuard® products' : grp[0]) + ' yet.',
+      prodFilters: PGROUPS.map(g => { const n = RESOURCES.filter(r => inGrp(g, r)).length; return { label: g[0], img: g[2], count: n + (n === 1 ? ' Document' : ' Documents'), onClick: () => this.setState({ prod: g[0] }), bar: g === grp ? '#de4228' : 'transparent' }; }),
+      resCount: filtered.length + (filtered.length === 1 ? ' document' : ' documents'),
+      reqType, sent, notSent: !sent, sentName: this.state.sentName,
+      reqTypes: REQ.map(q => ({ label: q, onClick: () => this.setState({ reqType: q }), bg: q === reqType ? '#de4228' : '#fff', color: q === reqType ? '#fff' : '#2c2e35', border: q === reqType ? '#de4228' : '#d9c7af' })),
+      fields: (() => { const cc = this.state.ctCountry || '', REG = { 'United States': US_STATES, 'Canada': CA_PROV, 'Mexico': MX_STATES };
+        const sel = (key) => e => this.setState(key === 'ctCountry' ? { ctCountry: e.target.value, ctState: '' } : { [key]: e.target.value });
+        return [
+          { label: 'Your Name *', name: 'name', type: 'text', required: true, isInput: true },
+          { label: 'Email Address *', name: 'email', type: 'email', required: true, isInput: true },
+          { label: 'Company Name', name: 'company', type: 'text', required: false, isInput: true },
+          { label: 'Country *', name: 'country', required: true, isSelect: true, placeholder: 'Select Country', options: ['United States', 'Canada', 'Mexico', 'Other'], value: cc, onChange: sel('ctCountry') },
+          { label: 'State / Province *', name: 'state', required: true, isSelect: true, placeholder: 'Select State / Province', options: REG[cc] || ['Other'], value: this.state.ctState || '', onChange: sel('ctState') },
+          { label: 'City', name: 'city', type: 'text', required: false, isInput: true },
+          { label: 'Full Address', name: 'address', type: 'text', required: false, isInput: true, span: '1 / -1' },
+          { label: 'Phone', name: 'phone', type: 'tel', required: false, isInput: true },
+          { label: 'Subject', name: 'subject', type: 'text', required: false, isInput: true }].map(f => ({ span: 'auto', ...f })); })(),
+      submit: e => { e.preventDefault(); const n = new FormData(e.target).get('name') || ''; this.setState({ sent: true, sentName: String(n).split(' ')[0] }); },
+      resetForm: () => this.setState({ sent: false, sentName: '' }),
+      offices: [
+        { title: 'Corporate Office', l1: "510 O'Neal Lane Ext.", l2: 'Baton Rouge, LA 70819', phone: '1.800.848.4500', tel: 'tel:1-800-848-4500' },
+        { title: 'Texas Facility', l1: '5102 Galveston Road', l2: 'Houston, TX 77017', phone: '1.713.641.2727', tel: 'tel:1-713-641-2727' }],
+      ...this.creditVals(),
+      ...this.hlVals(),
+      lightOpen: light >= 0,
+      lightSrc: light >= 0 ? PRODUCTS[0].gallery[light] : '',
+      lightLabel: light >= 0 ? (light + 1) + ' / ' + PRODUCTS[0].gallery.length : '',
+      closeLight: () => this.setState({ light: -1 }),
+      prevLight: e => { e.stopPropagation(); this.step(-1); },
+      nextLight: e => { e.stopPropagation(); this.step(1); }
+    };
+  }
+}
+</script>
+</body>
+</html>

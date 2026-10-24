@@ -1,1 +1,1 @@
-{ "name": "tools", "version": "1.0.0", "private": true, "dependencies": { "cheerio": "^1.0.0-rc.12", "sharp": "^0.34.5" } }
+{ "name": "tools", "version": "1.0.0", "private": true, "dependencies": { "cheerio": "1.0.0-rc.12", "sharp": "^0.34.5" } }
