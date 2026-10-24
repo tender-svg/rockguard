@@ -579,7 +579,7 @@
   // (the add / edit form is NOT closed by a click outside it: the page scrollbar sits on that backdrop and a click there closed the form with everything typed in)
   document.addEventListener('keydown', function (e) { if (e.key !== 'Escape') return; ['pwModal', 'histView', 'userModal', 'resetModal'].forEach(function (id) { var o = document.getElementById(id); if (o) o.remove(); }); if (!$('#modal').hidden) closeEditor(); });
   $('#menuBtn').addEventListener('click', function () { var o = document.body.classList.toggle('menu-open'); $('#menuBtn').setAttribute('aria-expanded', o ? 'true' : 'false'); });
-  $('#logoutBtn').addEventListener('click', function () { fetch('/api/admin/logout', { method: 'POST', credentials: 'include' }).catch(function () { }).then(goLogin); });
+  $('#logoutBtn').addEventListener('click', function () { fetch('/api/admin/logout', { method: 'POST', credentials: 'include' }).catch(function () { }).then(function () { try { localStorage.removeItem('rg-admin'); localStorage.removeItem('rg-cache-v1'); localStorage.removeItem('rg-cache-t'); } catch (e) { /* ignore */ } goLogin(); }); });
 
   /* ---------------------------------------------------------------- start: must be signed in */
   fetch('/api/admin/status', { credentials: 'include' }).then(function (r) { return r.ok ? r.json() : { loggedIn: false }; }).catch(function () { return { loggedIn: false }; }).then(function (s) {

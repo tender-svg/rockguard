@@ -286,6 +286,36 @@ function markStructure(html, pageKey) {
   return $m('#__m').html();
 }
 
+// page loader: visible from the first paint until the CMS data (page texts + lists) has been applied; js/cms.js and js/rg-content.js hold / release it (window.RGL).
+// Only the FIRST visit shows it (js/rg-cache.js keeps the data of the whole site in the browser, later pages are drawn at once); a page reload clears the cache.
+const LOADER_HEAD = '<style>' +
+  '#rg-loader{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;overflow:hidden;color:#fff;text-align:center;' +
+  'background:radial-gradient(ellipse at 50% 38%,#4a4d58 0%,#2c2e35 34%,#1d1e24 70%,#121317 100%);transition:opacity .6s ease,transform .6s ease,visibility .6s}' +
+  '#rg-loader.done{opacity:0;transform:scale(1.06);visibility:hidden;pointer-events:none}html.rg-loading{overflow:hidden}html.rg-cached #rg-loader{display:none}html.rg-cached{visibility:hidden}' +
+  '#rg-loader:before{content:"";position:absolute;left:0;right:0;bottom:15%;height:6px;opacity:.55;background:repeating-linear-gradient(90deg,#de4228 0 54px,transparent 54px 70px);animation:rgl-pipe .9s linear infinite}' +
+  '#rg-loader:after{content:"";position:absolute;left:0;right:0;bottom:calc(15% - 16px);height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent)}' +
+  '#rg-loader .rgl-mark{position:relative;width:132px;height:132px;display:grid;place-items:center}' +
+  '#rg-loader .rgl-ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#de4228,rgba(222,66,40,0) 38%,rgba(255,255,255,0) 52%,#f5ebdd 100%);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 calc(100% - 3px));animation:rgl-spin 1.25s linear infinite}' +
+  '#rg-loader .rgl-glow{position:absolute;inset:-26px;border-radius:50%;background:radial-gradient(circle,rgba(222,66,40,.32),rgba(222,66,40,0) 68%);animation:rgl-glow 2.2s ease-in-out infinite}' +
+  '#rg-loader .rgl-mark img{position:relative;width:62px;height:62px;border-radius:6px;filter:drop-shadow(0 6px 14px rgba(0,0,0,.45));animation:rgl-pop 2.2s ease-in-out infinite}' +
+  '#rg-loader .rgl-logo{width:min(270px,66vw);height:auto;filter:drop-shadow(0 4px 12px rgba(0,0,0,.4));animation:rgl-up .8s .1s both cubic-bezier(.2,.8,.2,1)}' +
+  '#rg-loader .rgl-tag{margin-top:-8px;font:600 clamp(12px,2.6vw,14px)/1.2 "Barlow Condensed","Arial Narrow",Arial,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:rgba(245,235,221,.78);animation:rgl-up .8s .25s both cubic-bezier(.2,.8,.2,1)}' +
+  '#rg-loader .rgl-bar{width:min(230px,60vw);height:4px;border-radius:4px;background:rgba(255,255,255,.18);overflow:hidden;position:relative;animation:rgl-up .8s .4s both cubic-bezier(.2,.8,.2,1)}' +
+  '#rg-loader .rgl-bar:after{content:"";position:absolute;top:0;bottom:0;width:44%;border-radius:4px;background:linear-gradient(90deg,transparent,#f5ebdd 45%,#de4228);animation:rgl-slide 1.1s ease-in-out infinite}' +
+  '@keyframes rgl-spin{to{transform:rotate(360deg)}}@keyframes rgl-slide{0%{left:-48%}100%{left:104%}}@keyframes rgl-pipe{to{background-position:70px 0}}' +
+  '@keyframes rgl-pop{0%,100%{transform:scale(1)}50%{transform:scale(.93)}}@keyframes rgl-glow{0%,100%{opacity:.55;transform:scale(.94)}50%{opacity:1;transform:scale(1.06)}}@keyframes rgl-up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}' +
+  '@media (prefers-reduced-motion:reduce){#rg-loader *,#rg-loader:before{animation:none!important}#rg-loader .rgl-bar:after{left:0;width:100%}}' +
+  '</style>\n' +
+  '<noscript><style>#rg-loader{display:none}html.rg-loading{overflow:auto}</style></noscript>\n' +
+  '<script>(function(){var d=document,n=0,ready=false,hid=false,t0=Date.now(),c=false;d.documentElement.classList.add("rg-loading");' +
+  'try{var nv=performance.getEntriesByType("navigation")[0];if(nv&&nv.type==="reload"){localStorage.removeItem("rg-cache-v1");localStorage.removeItem("rg-cache-t")}}catch(e){}try{var t=+localStorage.getItem("rg-cache-t");c=!!(t&&Date.now()-t<864e5&&!localStorage.getItem("rg-admin"))}catch(e){}if(c)d.documentElement.classList.add("rg-cached");' +
+  'function hide(){if(hid)return;hid=true;var e=d.getElementById("rg-loader");d.documentElement.classList.remove("rg-loading");d.documentElement.classList.remove("rg-cached");if(e){e.classList.add("done");setTimeout(function(){if(e.parentNode)e.parentNode.removeChild(e)},600)}}' +
+  'function check(){if(ready&&n<=0)setTimeout(function(){if(n<=0)hide()},Math.max(30,(RGL.cached?0:380)-(Date.now()-t0)))}' +
+  'window.RGL={cached:c,cachedUsed:false,hold:function(){n++},release:function(){n=Math.max(0,n-1);check()},miss:function(){RGL.cached=false;d.documentElement.classList.remove("rg-cached")}};' +
+  'd.addEventListener("DOMContentLoaded",function(){ready=true;check()});setTimeout(hide,c?2500:12000)})();</script>\n';
+const LOADER_BODY = '<div id="rg-loader" role="status" aria-live="polite" aria-label="Loading"><div class="rgl-mark"><span class="rgl-glow"></span><span class="rgl-ring"></span><img src="images/favicon.png" alt="" width="62" height="62"></div>' +
+  '<img class="rgl-logo" src="images/rockguard-hd-logo-footer-white.webp" alt="RockGuard HD" width="270" height="68"><div class="rgl-tag">The Rock Stops Here.™</div><div class="rgl-bar"></div></div>\n';
+
 function page(file, title, desc, bodyHtml, defaults, bodyClass) {
   bodyHtml = withFooter(bodyHtml);
   bodyHtml = bodyHtml.replace(/<img class="rg4"/, '<img class="rg4" data-cms="site-logo" data-cms-type="image"');   // header logo: the backend's global key
@@ -295,9 +325,9 @@ function page(file, title, desc, bodyHtml, defaults, bodyClass) {
     '<title>' + esc(title) + '</title>\n<link rel="icon" type="image/png" sizes="64x64" href="images/favicon.png">\n<link rel="apple-touch-icon" href="images/apple-touch-icon.png">\n<meta name="description" content="' + escAttr(desc) + '">\n' +
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
     '<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">\n' +
-    '<link rel="stylesheet" href="css/styles.css">\n<link rel="stylesheet" href="css/site.css">\n<link rel="stylesheet" href="css/cms.css">\n</head>\n' +
-    '<body data-page="' + escAttr(bodyClass) + '" data-state=\'' + JSON.stringify(defaults) + '\'>\n' + bodyHtml + '\n' +
-    (['contact', 'lunch', 'credit'].includes(bodyClass) ? '<script src="js/geo.js" defer></script>\n' : '') + '<script src="js/site.js" defer></script>\n<script src="js/rg-dialog.js" defer></script>\n<script src="js/rg-edit.js" defer></script>\n<script src="js/rg-content.js" defer></script>\n<script src="js/cms.js" defer></script>\n<script src="js/rg-sections.js" defer></script>\n<script src="js/rg-toolbar.js" defer></script>\n</body>\n</html>\n';
+    LOADER_HEAD + '<link rel="stylesheet" href="css/styles.css">\n<link rel="stylesheet" href="css/site.css">\n<link rel="stylesheet" href="css/cms.css">\n</head>\n' +
+    '<body data-page="' + escAttr(bodyClass) + '" data-state=\'' + JSON.stringify(defaults) + '\'>\n' + LOADER_BODY + bodyHtml + '\n' +
+    (['contact', 'lunch', 'credit'].includes(bodyClass) ? '<script src="js/geo.js" defer></script>\n' : '') + '<script src="js/site.js" defer></script>\n<script src="js/rg-cache.js" defer></script>\n<script src="js/rg-dialog.js" defer></script>\n<script src="js/rg-edit.js" defer></script>\n<script src="js/rg-content.js" defer></script>\n<script src="js/cms.js" defer></script>\n<script src="js/rg-sections.js" defer></script>\n<script src="js/rg-toolbar.js" defer></script>\n</body>\n</html>\n';
 }
 
 // ------------------------------------------------------------------ write everything

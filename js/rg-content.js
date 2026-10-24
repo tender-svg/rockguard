@@ -13,8 +13,15 @@
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return [].slice.call((r || document).querySelectorAll(s)); };
+  var RGC = window.RGC || { usable: function () { return false; }, list: function () { return null; }, setList: function () { } };   // data cache (js/rg-cache.js)
   function get(path) {
-    return fetch('/api/v2/' + path, { credentials: 'include', cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+    var fresh = fetch('/api/v2/' + path, { credentials: 'include', cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (j) { if (Array.isArray(j)) RGC.setList(path, j); return j; });
+    var cached = RGC.usable() ? RGC.list(path) : null;
+    if (cached) { if (window.RGL) RGL.cachedUsed = true; fresh.catch(function () { }); return Promise.resolve(cached); }   // drawn from the cache at once; the newer data is kept for the next page
+    if (window.RGL) { if (RGL.miss) RGL.miss(); RGL.hold(); }   // not cached yet: the page loader stays until the list is drawn
+    var done = function () { setTimeout(function () { if (window.RGL) RGL.release(); }, 120); };
+    fresh.then(done, done); return fresh;
   }
   var byOrder = function (a, b) { return (a.display_order || 0) - (b.display_order || 0); };
   var live = function (r) { return r.is_active !== false && r.is_deleted !== true; };
