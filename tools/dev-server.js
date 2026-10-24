@@ -1,4 +1,4 @@
-// Local server for the RockGuard site:  node tools/dev-server.js [port]   (default 5190)
+// Local server for the RockGuard site:  node tools/dev-server.js [port]   (default 5195)
 //   - serves the static files of the project root
 //   - /api/* and /admin/* are forwarded to the CMS backend  https://cmsapi.qpaix.com/rockguard/...
 //     (same thing the Netlify / Vercel redirects do in production), so login works from the local site
@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const PORT = Number(process.argv[2] || 5190);
+const PORT = Number(process.argv[2] || 5195);
 const BACKEND = { host: 'cmsapi.qpaix.com', prefix: '/rockguard' };
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.pdf': 'application/pdf', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8' };
 
