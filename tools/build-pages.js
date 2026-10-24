@@ -236,9 +236,60 @@ const tagStats = {};
 const FOOTER = fs.readFileSync(path.join(__dirname, 'footer.html'), 'utf8').replace('__YEAR__', String(new Date().getFullYear())).trim();
 const withFooter = html => html.replace(/<footer[\s\S]*<\/footer>/, () => FOOTER);
 
+// ------------------------------------------------------------------ add / remove: repeatable lists and sections (js/rg-sections.js)
+// A list = a container (data-rlist) whose items (data-rit) are cloned from the first one; every text / photo / link of an item is a numbered
+// slot (data-rs / data-ri / data-rl), so the edit mode can add, remove and fill items and SAVE keeps them as one JSON list.
+const LISTS = {
+  home: [['stats', '.rg32', '.rg33'], ['about', '.rg42', 'p.rg43']],
+  lunch: [['faq', '.rg254', '.rg255']],
+  contact: [['offices', '.rg283', '.rg285']],
+  credit: [['terms', 'ol.rg208', 'li'], ['guaranty', '.rg210', 'p'], ['sale', 'ol.rg212', 'li']],
+};
+const FOOTER_LISTS = [['g-rl-footer-products', 'footer .rg301', 0, 'a'], ['g-rl-footer-company', 'footer .rg301', 1, 'a:not([data-rl-fixed])']];
+const INLINE_TAGS = new Set(['span', 'b', 'i', 'em', 'strong', 'br', 'a', 'sup', 'sub', 'small', 'u', 'abbr', 'mark', 's', 'wbr']);
+const TEXT_BLOCK_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'li', 'span', 'div', 'a', 'button', 'strong', 'em', 'td', 'th', 'address', 'b', 'i', 'small']);
+function isTextBlock(el) {
+  if (!TEXT_BLOCK_TAGS.has(el.name)) return false; let direct = false;
+  for (const c of el.children || []) { if (c.type === 'text') { if (/\S/.test(c.data)) direct = true; } else if (c.type === 'tag') { if (!INLINE_TAGS.has(c.name)) return false; } else if (c.type !== 'comment') return false; }
+  return direct;
+}
+function markStructure(html, pageKey) {
+  const $m = cheerio.load('<div id="__m">' + html + '</div>', { _useHtmlParser2: true, decodeEntities: false, lowerCaseAttributeNames: true });
+  const markList = (id, box, itemSel) => {
+    const items = $m(box).children().filter((i, el) => $m(el).is(itemSel));
+    if (!items.length) return;
+    $m(box).attr('data-rlist', id);
+    items.each((i, item) => {
+      let s = 0, im = 0, l = 0; $m(item).attr('data-rit', '');
+      const walk = el => {
+        if (el.type !== 'tag') return;
+        if (el.name === 'img') { el.attribs['data-ri'] = String(im++); return; }
+        if (isTextBlock(el)) { el.attribs['data-rs'] = String(s++); if (el.name === 'a' && el.attribs.href) el.attribs['data-rl'] = String(l++); return; }
+        if (el.name === 'a' && el.attribs.href) { el.attribs['data-rl'] = String(l++); }
+        (el.children || []).forEach(walk);
+      };
+      walk(item);
+    });
+  };
+  (LISTS[pageKey] || []).forEach(([id, sel, itemSel]) => $m(sel).each((i, box) => markList('rl-' + pageKey + '-' + id, box, itemSel)));
+  FOOTER_LISTS.forEach(([id, sel, idx, itemSel]) => { const box = $m(sel).eq(idx); if (box.length) markList(id, box[0], itemSel); });
+  // sections of the page (not the ones drawn from the CMS): every one can be removed / restored, and new sections can be added after it (js/rg-sections.js)
+  if (!['login', 'project', 'ref-solution'].includes(pageKey)) {
+    const seen = {};
+    $m('main section').each((i, sec) => {
+      if ($m(sec).closest('[data-vgroup],[data-dyn]').length || $m(sec).parents('section').length) return;
+      const txt = $m(sec).text().replace(/\s+/g, ' ').trim().toLowerCase(), words = txt.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').split('-').slice(0, 4).join('-').slice(0, 30);
+      const base = 'sec-' + pageKey + '-' + (words || 'section'), n = seen[base] = (seen[base] || 0) + 1;
+      $m(sec).attr('data-sec-id', base + '-' + require('crypto').createHash('md5').update(txt).digest('hex').slice(0, 4) + (n > 1 ? '-' + n : ''));
+    });
+  }
+  return $m('#__m').html();
+}
+
 function page(file, title, desc, bodyHtml, defaults, bodyClass) {
   bodyHtml = withFooter(bodyHtml);
   bodyHtml = bodyHtml.replace(/<img class="rg4"/, '<img class="rg4" data-cms="site-logo" data-cms-type="image"');   // header logo: the backend's global key
+  bodyHtml = markStructure(bodyHtml, bodyClass);
   const tagged = tagPage(bodyHtml, bodyClass, registry); bodyHtml = tagged.html; tagStats[file] = tagged.tagged + (tagged.created ? ' (' + tagged.created + ' new keys)' : '');
   return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
     '<title>' + esc(title) + '</title>\n<link rel="icon" type="image/png" sizes="64x64" href="images/favicon.png">\n<link rel="apple-touch-icon" href="images/apple-touch-icon.png">\n<meta name="description" content="' + escAttr(desc) + '">\n' +
@@ -246,7 +297,7 @@ function page(file, title, desc, bodyHtml, defaults, bodyClass) {
     '<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">\n' +
     '<link rel="stylesheet" href="css/styles.css">\n<link rel="stylesheet" href="css/site.css">\n<link rel="stylesheet" href="css/cms.css">\n</head>\n' +
     '<body data-page="' + escAttr(bodyClass) + '" data-state=\'' + JSON.stringify(defaults) + '\'>\n' + bodyHtml + '\n' +
-    (bodyClass === 'contact' ? '<script src="js/geo.js" defer></script>\n' : '') + '<script src="js/site.js" defer></script>\n<script src="js/rg-dialog.js" defer></script>\n<script src="js/rg-edit.js" defer></script>\n<script src="js/rg-content.js" defer></script>\n<script src="js/cms.js" defer></script>\n<script src="js/rg-toolbar.js" defer></script>\n</body>\n</html>\n';
+    (bodyClass === 'contact' ? '<script src="js/geo.js" defer></script>\n' : '') + '<script src="js/site.js" defer></script>\n<script src="js/rg-dialog.js" defer></script>\n<script src="js/rg-edit.js" defer></script>\n<script src="js/rg-content.js" defer></script>\n<script src="js/cms.js" defer></script>\n<script src="js/rg-sections.js" defer></script>\n<script src="js/rg-toolbar.js" defer></script>\n</body>\n</html>\n';
 }
 
 // ------------------------------------------------------------------ write everything

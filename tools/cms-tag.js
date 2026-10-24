@@ -75,7 +75,7 @@ function tagPage(html, pageKey, registry) {
     if (SKIP_TAGS.has(el.name)) return;
     if ('data-cms' in a) return;                                   // explicit key in the source: respect it, do not look inside
     if (a['data-tpl'] !== undefined) return;                       // add / remove lists (js/rg-solution-tpl.js): saved as one list, not as keyed texts
-    if (a['data-dyn'] !== undefined || a['data-dd'] !== undefined || a['data-sale'] !== undefined || a['data-nocms'] !== undefined || a['data-hl-empty'] !== undefined) return;
+    if (a['data-dyn'] !== undefined || a['data-dd'] !== undefined || a['data-sale'] !== undefined || a['data-nocms'] !== undefined || a['data-hl-empty'] !== undefined || a['data-rlist'] !== undefined) return;
     const cls = (a.class || '').split(/\s+/);
     if (cls.some(c => skipClasses.has(c)) || cls.includes('rg1') || cls.includes('rg-burger')) return;
     if (a['data-vgroup']) {                                        // a state variant: its own occurrence counters
@@ -93,6 +93,20 @@ function tagPage(html, pageKey, registry) {
     for (const c of el.children || []) walk(c, counters);
   }
   for (const c of $('#__r')[0].children) walk(c, {});
+
+  // ---- header menu labels (Home, Products ... and the Support sub menu): one shared text per label ("g-txt-...", stored once, shown on every page)
+  if (pageKey !== 'login') {
+    const hreg = registry._chrome = registry._chrome || {}, hused = new Set(Object.values(hreg));
+    $('#__r header button.rg7, #__r header button.rg11').each((i, el) => {
+      if (el.attribs['data-cms'] !== undefined) return;
+      const kids = el.children || []; let direct = false, ok = true;
+      for (const c of kids) { if (c.type === 'text') { if (/\S/.test(c.data)) direct = true; } else if (c.type === 'tag') { if (!INLINE.has(c.name)) ok = false; } }
+      const n = norm($.html(el.children)); if (!ok || !direct || !n) return;
+      const sig = 'htext|' + n; let key = hreg[sig];
+      if (!key) { key = 'g-txt-' + (slug(n).slice(0, 24).replace(/-+$/, '') || 'item') + '-' + hash(n); while (hused.has(key)) key += 'x'; hreg[sig] = key; hused.add(key); created++; }
+      el.attribs['data-cms'] = key; el.attribs['data-cms-type'] = 'text'; tagged++;
+    });
+  }
 
   // ---- links: every link / link button gets a stable data-cms-link key (the live editor opens its link editor on it; the saved URL is stored under this key).
   // The key comes from the link's label + original address, never from its position. Links of the header / footer are shared by all pages ("lnk-g-...", stored once).
@@ -115,7 +129,7 @@ function tagPage(html, pageKey, registry) {
     if (el.type !== 'tag') return;
     const a = el.attribs || {};
     if (SKIP_LINK_TAGS.has(el.name)) return;
-    if (a['data-dyn'] !== undefined || a['data-dd'] !== undefined || a['data-sale'] !== undefined || a['data-nocms'] !== undefined || a['data-hl-empty'] !== undefined) return;
+    if (a['data-dyn'] !== undefined || a['data-dd'] !== undefined || a['data-sale'] !== undefined || a['data-nocms'] !== undefined || a['data-hl-empty'] !== undefined || a['data-rlist'] !== undefined) return;
     const cls = (a.class || '').split(/\s+/);
     if (cls.some(c => skipClasses.has(c)) || cls.includes('rg1')) return;
     if (a['data-vgroup']) { if (DYNAMIC_GROUPS.has(a['data-vgroup'])) return; counters = {}; }

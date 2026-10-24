@@ -36,6 +36,7 @@
   window.RGCMS.admin = false; window.RGCMS.editing = false;
   window.RGCMS.registerHook = function (id, h) { hooks[id] = h; refreshSave(); };   // h = { count(): number of unsaved changes, run(): Promise }
   window.RGCMS.refresh = function () { refreshSave(); };
+  window.RGCMS.rows = function () { return savedRows; };   // the saved page elements (this page + the shared ones), read by js/rg-sections.js
   window.RGCMS.reapply = function () { applySaved(savedRows); if (editing) makeEditable(true); };   // after a list was (re)drawn
 
   /* ---------------------------------------------------------------- 1) saved content for everybody */
@@ -111,7 +112,7 @@
   }
   // in edit mode links / navigation buttons must not leave the page (tabs and filters keep working)
   function onClickCapture(e) {
-    if (!editing) return; if (e.target.closest('#cms-admin-bar,#cms-dash,#cms-confirm,#cms-linked,.cms-img-badge,.cms-dyn-badge')) return;
+    if (!editing) return; if (e.target.closest('#cms-admin-bar,#cms-dash,#cms-confirm,#cms-linked,.cms-img-badge,.cms-dyn-badge,.rl-ctl')) return;
     var nav = e.target.closest('a[href]:not([href^="#"]), [data-href], [data-scroll]');
     if (nav && !(e.ctrlKey || e.metaKey)) {
       e.preventDefault(); e.stopImmediatePropagation();

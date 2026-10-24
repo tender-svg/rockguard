@@ -59,7 +59,15 @@
   "link|contact us|contact.html|1": "lnk-g-contact-us-01fe",
   "link|industrial fabrics, inc.|https://ind-fab.com/|1": "lnk-g-industrial-fabrics-inc-02d9",
   "link|cms login|login.html|1": "lnk-g-cms-login-29ae",
-  "link|qpaix infitech private limited|https://www.qpaix.com|1": "lnk-g-qpaix-infitech-private-lim-11e9"
+  "link|qpaix infitech private limited|https://www.qpaix.com|1": "lnk-g-qpaix-infitech-private-lim-11e9",
+  "htext|home": "g-txt-home-106a",
+  "htext|products": "g-txt-products-8602",
+  "htext|resources": "g-txt-resources-55b5",
+  "htext|project highlights": "g-txt-project-highlights-24ed",
+  "htext|contact us": "g-txt-contact-us-94ea",
+  "htext|credit application": "g-txt-credit-application-3176",
+  "htext|lunch &amp; learn": "g-txt-lunch-amp-learn-dc2b",
+  "htext|support ▾": "g-txt-support-b443"
  },
  "products": {
   "text|ready to protect your next pipeline?|1": "txt-ready-to-protect-your-next-5ffa",

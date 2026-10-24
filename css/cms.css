@@ -174,3 +174,21 @@ body.cms-editing [data-ttab]{cursor:text}
 #cms-linked .fl-name{font-size:14px;color:#4a4c53;word-break:break-all;min-width:0;flex:1}
 #cms-linked .ft .rm{margin-right:auto;border-color:#de4228;color:#de4228}
 #cms-linked .ft .rm:hover{background:#de4228;color:#fff}
+
+/* ---- add / remove (js/rg-sections.js) ---- */
+body.cms-editing [data-rit],body.cms-editing [data-sec-id],body.cms-editing [data-csec]{position:relative}
+.rl-x{position:absolute;top:-10px;right:-10px;z-index:40;width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:#de4228;color:#fff;cursor:pointer;font-size:16px;line-height:1;padding:0;font-family:Arial,sans-serif}
+.rl-x:hover{background:#2c2e35}
+.rl-photo{position:absolute;left:8px;bottom:8px;z-index:40}
+.rl-link{position:absolute;left:8px;top:-12px;z-index:40;padding:3px 10px;font-size:12px}
+.rl-addwrap{margin:14px 0;text-align:left}
+.rs-tools{position:absolute;top:10px;right:10px;z-index:60;display:flex;gap:8px}
+.rs-tools button{border:2px solid #fff;background:#2c2e35;color:#fff;padding:7px 14px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px}
+.rs-tools button:hover{background:#de4228}
+.rs-add{display:flex;justify-content:center;padding:10px;background:#faf4ec;border-top:1px dashed #de4228;border-bottom:1px dashed #de4228}
+.rs-removed{display:flex;align-items:center;justify-content:center;gap:14px;padding:14px;background:#efe3d3;color:#2c2e35;font-size:15px;border:1px dashed #6b4a35}
+.rs-pick .rs-opt{display:block;width:100%;text-align:left;border:1.5px solid #d9c7af;background:#fff;padding:12px 16px;margin:8px 0;cursor:pointer;font:inherit}
+.rs-pick .rs-opt:hover{border-color:#de4228;background:#faf4ec}
+.rs-pick .rs-opt b{display:block;font-family:'Barlow Condensed',sans-serif;font-size:18px;letter-spacing:.04em;text-transform:uppercase}
+.rs-pick .rs-opt span{display:block;color:#6b4a35;font-size:14px;margin-top:2px}
+body.cms-editing [data-rs][contenteditable]:hover,body.cms-editing [data-cf]:hover,body.cms-editing [data-cc]:hover{outline:1px dashed #de4228;outline-offset:2px}
