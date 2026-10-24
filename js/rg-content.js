@@ -29,6 +29,9 @@
   var imgSrc = function (u) { return String(u || '').replace(/^\//, ''); };   // /images/x.webp -> images/x.webp (the pages live in the site root)
   var img = function (u, alt, extra) { return u ? '<img class="rg14" src="' + esc(imgSrc(u)) + '" alt="' + esc(alt || '') + '" loading="lazy"' + (extra || '') + '>' : ''; };
   var fail = function (e) { if (window.console) console.warn('[rg-content]', e && e.stack || e); };   // the shipped content stays when something goes wrong
+  // the banner photo of the Products / product pages (a normal CMS image: "Change image" in edit mode)
+  var heroBg = function (key, src) { return '<img class="rg-herobg" src="' + esc(src ? imgSrc(src) : 'images/26a.webp') + '" alt="" data-cms="' + key + '" data-cms-type="image"><div class="rg-heroov"></div>'; };
+  var afterDraw = function () { if (window.RGCMS && window.RGCMS.reapply) window.RGCMS.reapply(); document.dispatchEvent(new CustomEvent('rg-redrawn')); };
   var pad2 = function (n) { return (n < 10 ? '0' : '') + n; };
   // the host that replaces the shipped state variants of a part of the page (see data-vgroup in tools/build-pages.js)
   function dropVariants(group) {
@@ -99,14 +102,14 @@
         }
         var ds = !acc && p.downloads[0] ? p.downloads[0][1] : '';
         host.innerHTML =
-          '<section class="rg80"><div class="rg81"><div class="rg82"><span class="rg18"></span>RockGuard® HD | Products</div><h1 class="rg83">Pipeline Protection <span class="rg41">Products</span></h1><div class="rg84">' + tabBtns + '</div></div></section>' +
+          '<section class="rg80 rg-hero">' + heroBg('img-hero-products') + '<div class="rg81"><div class="rg82"><span class="rg18"></span>RockGuard® HD | Products</div><h1 class="rg83">Pipeline Protection <span class="rg41">Products</span></h1><div class="rg84">' + tabBtns + '</div></div></section>' +
           '<section class="rg86"><div class="rg87">' + left + '<div><div class="rg92">' + esc(tag) + '</div><h2 class="rg93">' + esc(name) + '</h2>' + right +
           '<div class="rg98"><button class="rg99 rg-hover9" data-href="contact.html">Get a Quote</button>' + (ds ? '<a class="rg100 rg-hover7" href="' + esc(ds) + '" target="_blank" rel="noopener">Data Sheet ↓</a>' : '') + '</div></div></div></section>' +
           '<section class="rg80"><div class="rg101"><div class="rg102"><div><div class="rg103"><span class="rg18"></span>' + esc(name) + '</div><h3 class="rg104">Features &amp; <span class="rg41">Benefits</span></h3></div><div class="rg105">' + pad2(features.length) + ' Key Advantages</div></div><div class="rg106">' +
           features.map(function (f, i) { return '<div class="rg107 rg-hover10"><div class="rg108"><span class="rg109">' + pad2(i + 1) + '</span><span class="rg110"></span></div><h4 class="rg111">' + esc(f[0]) + '</h4>' + (f[1] ? '<p class="rg112">' + esc(f[1]) + '</p>' : '') + '</div>'; }).join('') + '</div></div></section>';
       }
-      host.addEventListener('click', function (e) { var b = e.target.closest('[data-pt]'); if (!b) return; sel = b.getAttribute('data-pt'); draw(); try { history.replaceState(null, '', 'products.html?prod=' + encodeURIComponent(sel)); } catch (x) { } });
-      draw();
+      host.addEventListener('click', function (e) { var b = e.target.closest('[data-pt]'); if (!b) return; sel = b.getAttribute('data-pt'); draw(); afterDraw(); try { history.replaceState(null, '', 'products.html?prod=' + encodeURIComponent(sel)); } catch (x) { } });
+      draw(); afterDraw();
     }).catch(fail);
   }
 
@@ -185,7 +188,7 @@
   }
   var editing = function () { return !!(window.RGCMS && window.RGCMS.editing); };
   var refreshBar = function () { if (window.RGCMS && window.RGCMS.refresh) window.RGCMS.refresh(); };
-  var notFoundBar = function (back, what) { return '<section class="rg162"><div class="rg163"><button class="rg164 rg-hover14" data-href="' + back + '">← Back</button></div></section><section class="rg183"><div class="rg184"><div class="rg185"><h2 class="rg186">' + what + ' not found</h2><p class="rg189">This page does not exist (any more).</p></div></div></section>'; };
+  var notFoundBar = function (back, what) { return '<section class="rg183"><div class="rg184"><div class="rg185"><h2 class="rg186">' + what + ' not found</h2><p class="rg189">This page does not exist (any more).</p></div></div></section>'; };
   function project() {
     get('stories').then(function (rows) {
       var list = rows.filter(live).map(storyOf); if (!list.length) return;
@@ -199,21 +202,21 @@
       function draw() {
         var n = m.images.length; gi = Math.min(gi, Math.max(0, n - 1)); document.title = r.title + ' | Project Highlights | RockGuard® HD';
         var vis = Math.min(3, n); ts = Math.max(0, Math.min(ts, n - vis));
-        var thumbs = m.images.slice(ts, ts + vis).map(function (s, k) { var j = ts + k, on = j === gi; return '<div style="position:relative"><button class="rg170 rg-hover15" data-gi="' + j + '" style="outline:3px solid ' + (on ? '#de4228' : 'transparent') + ';opacity:' + (on ? 1 : 0.7) + '"><img class="rg14" src="' + esc(imgSrc(s)) + '" alt=""></button>' + (editing() ? '<button type="button" class="app-x rl-ctl" data-pa="rmimg" data-i="' + j + '" title="Remove this photo" style="top:2px;right:2px;z-index:5">×</button>' : '') + '</div>'; }).join('');
+        var thumbs = m.images.slice(ts, ts + vis).map(function (s, k) { var j = ts + k, on = j === gi; return '<button class="rg170 rg-hover15" data-gi="' + j + '" style="outline:3px solid ' + (on ? '#de4228' : 'transparent') + ';opacity:' + (on ? 1 : 0.7) + '"><img class="rg14" src="' + esc(imgSrc(s)) + '" alt=""></button>'; }).join('');
         var words = (m.product + ' – ' + r.title).split(' '), head = words.slice(0, -1).join(' '), last = words[words.length - 1];
         var tabs = [['challenge', "Client's Challenge"], ['solution', 'RockGuard® Solution']].map(function (t) { var on = t[0] === tab; return '<button class="rg188 rg-hover16" data-ct="' + t[0] + '" style="background:' + (on ? '#de4228' : 'transparent') + ';color:' + (on ? '#fff' : '#2c2e35') + '">' + t[1] + '</button>'; }).join('');
         var ben = m.benefits.map(function (b, i) { return '<div class="rg180"><span class="rg181">✓</span><span' + (editing() ? ' contenteditable="true" spellcheck="false" data-pb="' + i + '"' : '') + '>' + esc(b) + '</span>' + (editing() ? '<button type="button" class="app-x rl-ctl" data-pa="rmben" data-i="' + i + '" style="position:static;margin-left:8px">×</button>' : '') + '</div>'; }).join('');
         host.innerHTML =
-          '<section class="rg162"><div class="rg163"><button class="rg164 rg-hover14" data-href="project-highlights.html">← All Projects</button></div></section>' +
           '<section class="rg165"><div class="rg166"><div class="rg167"><button class="rg168 rg-hover9" data-up aria-label="Previous photos">▲</button><div class="rg169">' + thumbs + '</div><button class="rg168 rg-hover9" data-down aria-label="More photos">▼</button></div>' +
           '<div class="rg171">' + img(m.images[gi], r.title) + '<button class="rg172 rg-hover6" data-gi="prev" aria-label="Previous photo">‹</button><button class="rg173 rg-hover6" data-gi="next" aria-label="Next photo">›</button>' +
-          (editing() ? '<div class="rl-ctl" style="position:absolute;left:12px;bottom:12px;z-index:6;display:flex;gap:8px"><button type="button" class="dyn-photo" style="position:static" data-pa="photo">📷 Change this photo</button><button type="button" class="dyn-photo" style="position:static" data-pa="addimg">＋ Add photo</button></div>' : '') + '</div></div>' +
+          (editing() ? '<div class="rl-ctl" style="position:absolute;left:12px;bottom:12px;z-index:6;display:flex;gap:8px"><button type="button" class="dyn-photo" style="position:static" data-pa="photo">📷 Change this photo</button><button type="button" class="dyn-photo" style="position:static" data-pa="addimg">＋ Add photo</button>' + (m.images.length ? '<button type="button" class="dyn-photo" style="position:static;background:#de4228" data-pa="rmimg" data-i="' + gi + '">🗑 Remove this photo</button>' : '') + '</div>' : '') + '</div></div>' +
           '<div class="rg174"><div class="rg175"><span class="rg176"' + ce('product') + '>' + esc(m.product) + '</span><span class="rg158">Case Study · <span' + ce('location') + '>' + esc(m.location) + '</span></span></div><h1 class="rg177"' + ce('subtitle') + '>' + esc(m.subtitle) + '</h1>' +
           '<div class="rg178"><div><strong class="rg44">Owner:</strong> <span' + ce('owner') + '>' + esc(m.owner) + '</span></div><div><strong class="rg44">Products Used:</strong> ' + esc(m.product) + '</div></div>' +
           '<div class="rg179">' + ben + '</div>' + (editing() ? '<div class="rl-ctl"><button type="button" class="dyn-add" data-pa="addben">＋ Add benefit</button></div>' : '') +
           (m.file || editing() ? '<a class="rg182 rg-hover9" href="' + esc(m.file || '#') + '" target="_blank" rel="noopener">Download Project Highlight</a>' : '') + (editing() ? '<div class="rl-ctl" style="margin-top:10px"><button type="button" class="dyn-add" data-pa="file">🔗 Set the PDF / link of this button</button></div>' : '') + '</div></section>' +
           '<section class="rg183"><div class="rg184"><div class="rg185"><h2 class="rg186">' + esc(head) + ' <span class="rg41">' + esc(last) + '</span></h2><div class="rg187">' + tabs + '</div><p class="rg189" style="white-space:pre-line"' + ce(tab === 'challenge' ? 'challenge' : 'solution', true) + '>' + esc(tab === 'challenge' ? m.challenge : m.solution) + '</p></div></div></section>';
       }
+      var bg = $('section.rg-hero > img.rg-herobg'); if (bg && m.images[0]) bg.setAttribute('src', imgSrc(m.images[0]));   // then a saved banner photo (CMS key) is applied over it by js/cms.js
       var mark = function () { dirty = true; refreshBar(); };
       host.addEventListener('click', function (e) {
         var pa = e.target.closest('[data-pa]');
@@ -246,8 +249,8 @@
         return RGE.api('PATCH', 'stories/' + r.id, body).then(function () { var l = {}; l[r.title] = 'Updated'; return RGE.pending ? null : RGE.history('stories', l); }).then(function () { dirty = false; refreshBar(); return 1; });
       }
       if (window.RGCMS && window.RGCMS.registerHook) window.RGCMS.registerHook('project', { count: function () { return dirty ? 1 : 0; }, run: save });
-      document.addEventListener('rg-edit-mode', function () { draw(); });
-      draw();
+      document.addEventListener('rg-edit-mode', function () { draw(); afterDraw(); });
+      draw(); afterDraw();
     }).catch(fail);
   }
 
@@ -369,7 +372,7 @@
             (editing() ? '<div style="display:flex;gap:8px;margin-top:10px"><button type="button" class="dyn-add" data-sa="dlink" data-i="' + i + '">Link / file</button><button type="button" class="app-x" data-sa="rmd" data-i="' + i + '" title="Remove this download" style="position:static">×</button></div>' : '') + '</' + tagClose + '>';
         }).join('');
         host.innerHTML =
-          '<section class="rg80"><div class="rg81"><div class="rg82"><span class="rg18"></span>RockGuard® HD | Products</div><h1 class="rg83"' + ce('data-sf="title"') + '>' + esc(m.title) + '</h1><div class="rg84"><button class="rg85 rg-hover8" data-href="products.html" style="background:rgba(255,255,255,.06);color:#d6c6b2">← All Products</button></div></div></section>' +
+          '<section class="rg80 rg-hero">' + heroBg('img-hero-solution', m.image) + '<div class="rg81"><div class="rg82"><span class="rg18"></span>RockGuard® HD | Products</div><h1 class="rg83"' + ce('data-sf="title"') + '>' + esc(m.title) + '</h1><div class="rg84"><button class="rg85 rg-hover8" data-href="products.html" style="background:rgba(255,255,255,.06);color:#d6c6b2">← All Products</button></div></div></section>' +
           '<section class="rg86"><div class="rg87"><div class="rg88" style="position:relative">' + img(m.image, m.title) + btn('dyn-photo', 'photo', '📷 Change photo') + '</div><div><div class="rg92"' + ce('data-sf="tag"') + '>' + esc(m.tag) + '</div><h2 class="rg93">' + esc(m.title) + '</h2>' +
           (lead || editing() ? '<p class="rg94"' + ce('data-sf="lead"') + '>' + esc(m.lead) + '</p>' : '') + (editing() && !m.lead ? '<p class="rg94" style="opacity:.6">(Empty: the summary below is shown instead.)</p>' : '') +
           '<div class="rg98"><button class="rg99 rg-hover9" data-href="contact.html">Get a Quote</button>' + (ds ? '<a class="rg100 rg-hover7" href="' + esc(ds) + '" target="_blank" rel="noopener">Data Sheet ↓</a>' : '') + '</div>' +
@@ -404,8 +407,8 @@
         return pr.then(function () { return RGE.pending ? null : RGE.history('solutions', log); }).then(function () { dirty = {}; refresh(); return n; });
       }
       if (window.RGCMS && window.RGCMS.registerHook) window.RGCMS.registerHook('solution', { count: function () { return Object.keys(dirty).length; }, run: save });
-      document.addEventListener('rg-edit-mode', function () { draw(); });
-      draw();
+      document.addEventListener('rg-edit-mode', function () { draw(); afterDraw(); });
+      draw(); afterDraw();
     }).catch(fail);
   }
 

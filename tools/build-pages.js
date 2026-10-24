@@ -317,8 +317,17 @@ const LOADER_HEAD = '<style>' +
 const LOADER_BODY = '<div id="rg-loader" role="status" aria-live="polite" aria-label="Loading"><div class="rgl-mark"><span class="rgl-glow"></span><span class="rgl-ring"></span><img src="images/logo-shield-sm.webp" alt="" width="62" height="76"></div>' +
   '<img class="rgl-logo" src="images/logo-wordmark-sm.webp" alt="RockGuard HD Pipeline Protection Mesh" width="300" height="66"><div class="rgl-tag">The Rock Stops Here.™</div><div class="rgl-bar"></div></div>\n';
 
+// background photo of the dark banner at the top of these pages (a normal CMS image: replace it with "Change image" in edit mode); the Products banner is drawn by js/rg-content.js
+const HERO = { resources: 'mainpic_mdfy', highlights: 'IMG_0097_crop', contact: 'RockGuard-HD-gallery-6', credit: 'RockGuard-HD-gallery-3', lunch: 'RockGuard-HD-gallery-11', project: 'RockGuard-HD-gallery-10' };
+function withHero(html, pageKey) {
+  if (!HERO[pageKey]) return html;
+  const $h = cheerio.load('<div id="__h">' + html + '</div>', { _useHtmlParser2: true, decodeEntities: false, lowerCaseAttributeNames: true });
+  const sec = $h('main > section.rg80').first(); if (!sec.length) return html;
+  sec.addClass('rg-hero').prepend('<img class="rg-herobg" src="images/' + HERO[pageKey] + '.webp" alt="" data-cms="img-hero-' + pageKey + '" data-cms-type="image"><div class="rg-heroov"></div>');
+  return $h('#__h').html();
+}
 function page(file, title, desc, bodyHtml, defaults, bodyClass) {
-  bodyHtml = withFooter(bodyHtml);
+  bodyHtml = withHero(withFooter(bodyHtml), bodyClass);
   bodyHtml = bodyHtml.replace(/<img class="rg4"/, '<img class="rg4" data-cms="site-logo" data-cms-type="image"');   // header logo: the backend's global key
   bodyHtml = markStructure(bodyHtml, bodyClass);
   const tagged = tagPage(bodyHtml, bodyClass, registry); bodyHtml = tagged.html; tagStats[file] = tagged.tagged + (tagged.created ? ' (' + tagged.created + ' new keys)' : '');

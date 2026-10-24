@@ -176,6 +176,7 @@
   function offsetOf(el) { var x = 0, y = 0, n = el; while (n) { x += n.offsetLeft || 0; y += n.offsetTop || 0; n = n.offsetParent; } return { x: x, y: y }; }
   function visible(el) { if (el.closest('[hidden]')) return false; if (!el.getClientRects().length) return false; return el.checkVisibility ? el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) : true; }
   function buildBadges() {
+    $$('.cms-img-badge,.cms-dyn-badge').forEach(function (b) { b.remove(); });
     badges = [];
     $$('img[data-cms][data-cms-type="image"]').forEach(function (img) {
       var b = document.createElement('button'); b.type = 'button'; b.className = 'cms-img-badge'; b.textContent = '📷 Change image';
@@ -198,6 +199,7 @@
       });
     }, 30);
   }
+  document.addEventListener('rg-redrawn', function () { if (editing) { buildBadges(); positionBadges(); } });   // a list / tab drawn by js/rg-content.js
   window.addEventListener('resize', positionBadges); window.addEventListener('scroll', positionBadges, { passive: true });
   setInterval(function () { if (editing) positionBadges(); }, 700);   // tabs / sliders / lists change what is visible
 
