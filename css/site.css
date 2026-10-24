@@ -139,7 +139,14 @@ section.rg-hero>.rg81,section.rg-hero>.rg113{position:relative;z-index:1}
   .wb-hero{min-height:280px}
 }
 
-/* ---- Products page: the product tabs sit in a strip below the banner photo ---- */
-.rg-tabstrip{background:#2c2e35}
-.rg-tabstrip-in{max-width:1280px;margin:0 auto;padding:22px 32px 0}
-@media (max-width:768px){.rg-tabstrip-in{padding:16px 16px 0}}
+/* ---- Products page: the product tabs sit in a clean white strip below the banner photo (red underline = the open product) ---- */
+.rg-tabstrip{background:#fff;border-bottom:1px solid #e2d2bc;box-shadow:0 8px 22px rgba(44,46,53,.07);position:relative;z-index:2}
+.rg-tabstrip-in{max-width:1280px;margin:0 auto;padding:0 32px}
+.rg-tabstrip .rg84{padding:0;margin:0;gap:0;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.rg-tabstrip .rg84::-webkit-scrollbar{display:none}
+.rg-ptab{flex:none;position:relative;background:transparent;color:#6b4a35;padding:22px 28px 20px;font-size:18px;border-bottom:4px solid transparent;margin-bottom:-1px;transition:color .2s,background .2s,border-color .2s}
+.rg-ptab:hover{color:#de4228;background:#faf4ec;border-bottom-color:rgba(222,66,40,.35)}
+.rg-ptab.on{color:#2c2e35;border-bottom-color:#de4228;background:transparent}
+.rg-ptab.on:hover{color:#2c2e35;background:#faf4ec;border-bottom-color:#de4228}
+.rg-ptab:focus-visible{outline:2px solid #de4228;outline-offset:-4px}
+@media (max-width:768px){.rg-tabstrip-in{padding:0 8px}.rg-ptab{padding:18px 16px 16px;font-size:16px}}

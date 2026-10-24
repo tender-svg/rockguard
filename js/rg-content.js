@@ -150,7 +150,7 @@
       var sel = q && tabs().some(function (t) { return t.key === q[1]; }) ? q[1] : (tabs()[0] || {}).key;
       function draw() {
         var acc = sel === 'acc', p = acc ? null : prodByKey(sel) || mainProds()[0], m = p && pm(p);
-        var tabBtns = tabs().map(function (t) { var on = t.key === sel; return '<button class="rg85 rg-hover8" data-pt="' + esc(t.key) + '" style="background:' + (on ? '#f5ebdd' : 'rgba(255,255,255,.06)') + ';color:' + (on ? '#2c2e35' : '#d6c6b2') + '">' + esc(t.name) + '</button>'; }).join('');
+        var tabBtns = tabs().map(function (t) { var on = t.key === sel; return '<button class="rg85 rg-ptab' + (on ? ' on' : '') + '" data-pt="' + esc(t.key) + '"' + (on ? ' aria-current="true"' : '') + '>' + esc(t.name) + '</button>'; }).join('');
         var name, tag, left, right, feats = [];   // feats: [owner model, index in its features]
         if (acc) {
           var items = accProds().map(pm); name = 'Accessories'; tag = 'Installation & Jobsite';
