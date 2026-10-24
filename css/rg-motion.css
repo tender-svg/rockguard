@@ -1,0 +1,47 @@
+/* Scroll animations (js/rg-motion.js). Everything is gated by html.rg-motion, so without JS or with "reduce motion" the page renders exactly as before. */
+html.rg-motion .rgm{--rgm-d:0ms;opacity:0;transition:opacity .8s cubic-bezier(.22,.61,.36,1) var(--rgm-d),transform .8s cubic-bezier(.22,.61,.36,1) var(--rgm-d),clip-path .9s cubic-bezier(.22,.61,.36,1) var(--rgm-d),filter .8s ease var(--rgm-d)}
+html.rg-motion .rgm-up{transform:translateY(34px)}
+/* headings: slide in from the left, blur clearing (no clip-path: it would hide them from the observer) */
+html.rg-motion .rgm-head{transform:translate(-36px,16px);filter:blur(8px)}
+/* photos: unveil + slow zoom-out */
+html.rg-motion .rgm-img{transform:scale(1.12);clip-path:inset(0 0 12% 0);filter:saturate(.7)}
+html.rg-motion .rgm.rgm-in{opacity:1;transform:none;clip-path:inset(0 0 0 0);filter:none}
+/* boxes (cards, feature tiles, questions ...): rise and settle as one piece */
+html.rg-motion .rgm-block{transform:translateY(42px) scale(.965)}
+html.rg-motion .rgm-block.rgm-in{transform:none}
+/* start state without a transition (set for one frame by js/rg-motion.js) */
+html.rg-motion .rgm.rgm-nt{transition:none!important}
+/* image hover: gentle zoom inside its frame (only on photos that are clipped by a parent) */
+@media (hover:hover){
+  html.rg-motion .rgm-img.rgm-in{transition:transform .9s cubic-bezier(.22,.61,.36,1),filter .5s ease}
+  html.rg-motion .rgm-img.rgm-in.rgm-zoom:hover{transform:scale(1.05)}
+}
+/* thin progress bar at the top while scrolling */
+#rgm-bar{position:fixed;left:0;top:0;height:3px;width:100%;z-index:2147482000;background:#de4228;transform:scaleX(0);transform-origin:0 50%;pointer-events:none}
+body.has-cms-bar #rgm-bar{top:54px}
+
+/* ---- title banner of every page: the photo eases in with a soft zoom-out, label / title / the rest come in one after another ---- */
+html.rg-motion .rgm-banner{overflow:hidden}
+@keyframes rgm-kb{from{transform:scale(1.14)}to{transform:scale(1)}}
+@keyframes rgm-slide{from{opacity:0;transform:translateX(-60px);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
+@keyframes rgm-rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+html.rg-motion .rgm-banner-on>img,html.rg-motion .rgm-banner-on .rg-herobg{animation:rgm-kb 7s cubic-bezier(.2,.6,.3,1) both}
+html.rg-motion .rgm-banner-on .rg17,html.rg-motion .rgm-banner-on .rg82,html.rg-motion .rgm-banner-on .rg74,html.rg-motion .rgm-banner-on .wb-pill{animation:rgm-rise .8s cubic-bezier(.22,.61,.36,1) .1s both}
+html.rg-motion .rgm-banner-on h1{animation:rgm-slide 1s cubic-bezier(.22,.61,.36,1) .3s both}
+html.rg-motion .rgm-banner-on h1 ~ *{animation:rgm-rise .9s cubic-bezier(.22,.61,.36,1) .65s both}
+/* the banner texts are plain elements too: they never wait for the scroll animation of the page */
+html.rg-motion .rgm-banner .rgm{opacity:1;transform:none;filter:none;clip-path:none}
+
+/* ---- first-paint hold: banner text stays invisible until its entrance starts (html.rgm-pre is set in <head>, lifted by js/rg-motion.js, and by a timeout there as a safety net) ---- */
+html.rgm-pre h1,html.rgm-pre h1 ~ *,html.rgm-pre .rg17,html.rgm-pre .rg82,html.rgm-pre .rg74,html.rgm-pre .wb-pill{opacity:0}
+html.rgm-pre section>img,html.rgm-pre .rg-herobg{transform:scale(1.14)}
+
+/* ---- CMS edit mode / any text being edited: always fully visible and still, so typing never flickers or hides ---- */
+html.rg-motion body.cms-editing .rgm,html.rg-motion .rgm[contenteditable="true"],html.rg-motion [contenteditable="true"] .rgm{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important;transition:none!important}
+html.rgm-pre body.cms-editing h1,html.rgm-pre body.cms-editing h1 ~ *,html.rgm-pre body.cms-editing .rg17,html.rgm-pre body.cms-editing .rg82,html.rgm-pre body.cms-editing .rg74,html.rgm-pre body.cms-editing .wb-pill{opacity:1!important}
+@media (prefers-reduced-motion:reduce){
+  html.rg-motion .rgm{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important;transition:none!important}
+  html.rg-motion .rgm-banner-on *,html.rg-motion .rgm-banner-on>img{animation:none!important}
+  html.rgm-pre h1,html.rgm-pre h1 ~ *,html.rgm-pre .rg17,html.rgm-pre .rg82,html.rgm-pre .rg74,html.rgm-pre .wb-pill{opacity:1!important}
+  #rgm-bar{display:none}
+}

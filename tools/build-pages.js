@@ -289,6 +289,8 @@ function markStructure(html, pageKey) {
 // page loader: visible from the first paint until the CMS data (page texts + lists) has been applied; js/cms.js and js/rg-content.js hold / release it (window.RGL).
 // Only the FIRST visit shows it (js/rg-cache.js keeps the data of the whole site in the browser, later pages are drawn at once); a page reload clears the cache.
 // It uses the logo of the website (the shield + the "RockGuardHD" wordmark of the header, cut from images/rockguard-hd-logo-tm2) on the light page colours.
+// banner text / photo are held invisible from the first paint until their entrance animation starts (html.rgm-pre, lifted by js/rg-motion.js; the timeout is a safety net)
+const PRE_HOLD = '<script>(function(){var d=document.documentElement;if(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)return;d.classList.add("rgm-pre");setTimeout(function(){d.classList.remove("rgm-pre")},9000)})();</script>' + '\n';
 const LOADER_HEAD = '<style>' +
   '#rg-loader{position:fixed;inset:0;z-index:2147483000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;overflow:hidden;color:#2c2e35;text-align:center;' +
   'background:radial-gradient(ellipse at 50% 38%,#fff 0%,#faf4ec 40%,#f5ebdd 72%,#e9ddcc 100%);transition:opacity .6s ease,transform .6s ease,visibility .6s}' +
@@ -335,9 +337,9 @@ function page(file, title, desc, bodyHtml, defaults, bodyClass) {
     '<title>' + esc(title) + '</title>\n<link rel="icon" type="image/png" sizes="64x64" href="images/favicon.png">\n<link rel="apple-touch-icon" href="images/apple-touch-icon.png">\n<meta name="description" content="' + escAttr(desc) + '">\n' +
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
     '<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">\n' +
-    LOADER_HEAD + '<link rel="stylesheet" href="css/styles.css">\n<link rel="stylesheet" href="css/site.css">\n<link rel="stylesheet" href="css/cms.css">\n</head>\n' +
+    LOADER_HEAD + PRE_HOLD + '<link rel="stylesheet" href="css/styles.css">\n<link rel="stylesheet" href="css/site.css">\n<link rel="stylesheet" href="css/rg-motion.css">\n<link rel="stylesheet" href="css/cms.css">\n</head>\n' +
     '<body data-page="' + escAttr(bodyClass) + '" data-state=\'' + JSON.stringify(defaults) + '\'>\n' + LOADER_BODY + bodyHtml + '\n' +
-    (['contact', 'lunch', 'credit'].includes(bodyClass) ? '<script src="js/geo.js" defer></script>\n' : '') + '<script src="js/site.js" defer></script>\n<script src="js/rg-cache.js" defer></script>\n<script src="js/rg-dialog.js" defer></script>\n<script src="js/rg-edit.js" defer></script>\n<script src="js/rg-content.js" defer></script>\n<script src="js/cms.js" defer></script>\n<script src="js/rg-sections.js" defer></script>\n<script src="js/rg-toolbar.js" defer></script>\n</body>\n</html>\n';
+    (['contact', 'lunch', 'credit'].includes(bodyClass) ? '<script src="js/geo.js" defer></script>\n' : '') + '<script src="js/site.js" defer></script>\n<script src="js/rg-cache.js" defer></script>\n<script src="js/rg-motion.js" defer></script>\n<script src="js/rg-dialog.js" defer></script>\n<script src="js/rg-edit.js" defer></script>\n<script src="js/rg-content.js" defer></script>\n<script src="js/cms.js" defer></script>\n<script src="js/rg-sections.js" defer></script>\n<script src="js/rg-toolbar.js" defer></script>\n</body>\n</html>\n';
 }
 
 // ------------------------------------------------------------------ write everything
