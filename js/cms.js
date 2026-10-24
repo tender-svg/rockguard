@@ -251,7 +251,7 @@
       if (i >= keys.length) {
         btn.disabled = false; if (!queued) logPage(savedKeys);
         if (failed.length) toast('Saved ' + done + ', but ' + failed.length + ' failed: ' + failed[0], true); else if (queued) toast('Submitted ' + done + ' change' + (done === 1 ? '' : 's') + ' for admin approval. The website is updated once an admin approves.'); else toast('Saved ' + done + ' change' + (done === 1 ? '' : 's') + '. The website is updated.');
-        refreshSave(); return;
+        refreshSave(); if (window.RGC && RGC.refresh) RGC.refresh(); return;
       }
       var key = keys[i], type = dirty[key], val = valueOf(key, type);
       if (val == null) { delete dirty[key]; next(i + 1); return; }
@@ -283,8 +283,7 @@
   viaPre('admin/status', '/api/admin/status').then(function (r) { return r.ok ? r.json() : { loggedIn: false }; }).catch(function () { return { loggedIn: false }; }).then(function (s) {
     if (heldStatus) release();
     if (!s || !s.loggedIn) { RGC.admin(false); return; }
-    RGC.admin(true);   // a signed-in admin always works on fresh data
-    if (window.RGL && RGL.cachedUsed) { location.reload(); return; }   // this view was drawn from the cache: load it again with fresh data
+    RGC.admin(true);   // flag only: the cache is used for the admin too (no loader when switching pages), it is refreshed after every SAVE
     buildBar(s);
     Object.assign(window.RGCMS, { admin: true, setEditing: setEditing, save: save, uploadImage: uploadImage, openDashboard: openDashboard, dirty: dirty, markDirty: markDirty, badges: function () { return badges; } });   // also used by tools/test-cms.js
     document.dispatchEvent(new CustomEvent('rg-admin', { detail: {} }));

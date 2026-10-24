@@ -332,7 +332,7 @@ const LOADER_HEAD = '<style>' +
   '</style>\n' +
   '<noscript><style>#rg-loader{display:none}html.rg-loading{overflow:auto}</style></noscript>\n' +
   '<script>(function(){var d=document,n=0,ready=false,hid=false,fin=false,t0=Date.now(),c=false,P=0,S=0;d.documentElement.classList.add("rg-loading");' +
-  'try{var nv=performance.getEntriesByType("navigation")[0];if(nv&&nv.type==="reload"){localStorage.removeItem("rg-cache-v1");localStorage.removeItem("rg-cache-t")}}catch(e){}try{var t=+localStorage.getItem("rg-cache-t");c=!!(t&&Date.now()-t<864e5&&!localStorage.getItem("rg-admin"))}catch(e){}if(c)d.documentElement.classList.add("rg-cached");' +
+  'try{var nv=performance.getEntriesByType("navigation")[0];if(nv&&nv.type==="reload"){localStorage.removeItem("rg-cache-v1");localStorage.removeItem("rg-cache-t")}}catch(e){}try{var t=+localStorage.getItem("rg-cache-t");c=!!(t&&Date.now()-t<864e5)}catch(e){}if(c)d.documentElement.classList.add("rg-cached");' +
   /* progress: eases towards 94 % while the data comes in, jumps to 100 % when everything is drawn */
   'function frame(){var e=d.getElementById("rg-loader");if(e){P=hid?1:.94*(1-Math.exp(-(Date.now()-t0)/900));S+=(P-S)*.22;if(P-S<.004)S=P;e.style.setProperty("--p",S.toFixed(3));}if(!fin)requestAnimationFrame(frame)}requestAnimationFrame(frame);' +
   'function finish(){if(fin)return;fin=true;var e=d.getElementById("rg-loader");d.documentElement.classList.remove("rg-loading");d.documentElement.classList.remove("rg-cached");if(e){e.classList.add("done");setTimeout(function(){if(e.parentNode)e.parentNode.removeChild(e)},370)}}' +

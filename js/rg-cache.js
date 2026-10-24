@@ -2,7 +2,7 @@
  * The first time a visitor opens the website the page shows its loader while the CMS data of that page is fetched; the data is kept in the browser
  * (localStorage) and, once the page is shown, the data of ALL other pages and lists is fetched in the background too.
  * After that every page is drawn at once from the cache (no loader) and refreshed from the CMS in the background (js/cms.js, js/rg-content.js).
- * An admin who is signed in never uses the cache (always fresh data); signing in / out clears it.
+ * A signed-in admin uses the cache too (no loader when switching pages): signing in / out clears it, and after SAVE the cache is refreshed in the background (RGC.refresh).
  * Nothing here is required: if localStorage is blocked or full everything works as before (loader on every page).
  */
 (function () {
@@ -23,25 +23,26 @@
   }
   var RGC = window.RGC = {
     // may the cache be used for drawing the page? (not for a signed-in admin, not when older than a day)
-    usable: function () { return !!ls(function (s) { var t = +s.getItem(T); return t && Date.now() - t < MAX && !s.getItem(ADMIN); }); },
+    usable: function () { return !!ls(function (s) { var t = +s.getItem(T); return t && Date.now() - t < MAX; }); },
     page: function (slug) { var e = load().pages[slug]; return e ? e.d : null; },
     list: function (path) { var e = load().lists[path]; return e ? e.d : null; },
-    setPage: function (slug, rows) { if (Array.isArray(rows) && !ls(function (s) { return s.getItem(ADMIN); })) { load().pages[slug] = { t: Date.now(), d: rows }; flush(); } },
-    setList: function (path, rows) { if (Array.isArray(rows) && !ls(function (s) { return s.getItem(ADMIN); })) { load().lists[path] = { t: Date.now(), d: rows }; flush(); } },
+    setPage: function (slug, rows) { if (Array.isArray(rows)) { load().pages[slug] = { t: Date.now(), d: rows }; flush(); } },
+    setList: function (path, rows) { if (Array.isArray(rows)) { load().lists[path] = { t: Date.now(), d: rows }; flush(); } },
     clear: function () { clearTimeout(timer); mem = { v: 1, pages: {}, lists: {} }; ls(function (s) { s.removeItem(KEY); s.removeItem(T); }); },
     // a signed-in admin always gets fresh data: set / unset by js/cms.js and js/login.js
-    admin: function (on) { if (on) { ls(function (s) { s.setItem(ADMIN, '1'); }); RGC.clear(); } else ls(function (s) { s.removeItem(ADMIN); }); }
+    admin: function (on) { if (on) ls(function (s) { s.setItem(ADMIN, '1'); }); else ls(function (s) { s.removeItem(ADMIN); }); },
+    refresh: function () { warm(true); }   // after a save: fetch everything again in the background (the cache stays in use)
   };
 
   /* background: fetch the data of the rest of the website once the page is shown (only what is missing or older than 10 minutes) */
   function jget(path) { return fetch('/api/v2/' + path, { credentials: 'include', cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); }
-  function warm() {
+  function warm(force) {
     if (!RGC.usable()) return; var c = load(), now = Date.now(), jobs = [];
-    PAGES.forEach(function (p) { var e = c.pages[p]; if (!e || now - e.t > FRESH) jobs.push(jget('page-elements/' + encodeURIComponent(p)).then(function (d) { RGC.setPage(p, d); })); });
-    LISTS.forEach(function (p) { var e = c.lists[p]; if (!e || now - e.t > FRESH) jobs.push(jget(p).then(function (d) { RGC.setList(p, d); return d; })); });
+    PAGES.forEach(function (p) { var e = c.pages[p]; if (!e || force || now - e.t > FRESH) jobs.push(jget('page-elements/' + encodeURIComponent(p)).then(function (d) { RGC.setPage(p, d); })); });
+    LISTS.forEach(function (p) { var e = c.lists[p]; if (!e || force || now - e.t > FRESH) jobs.push(jget(p).then(function (d) { RGC.setList(p, d); return d; })); });
     // the page elements of every product page (texts, features, downloads): one entry per solution
     var sol = c.lists.solutions; (sol ? Promise.resolve(sol.d) : Promise.all(jobs).then(function () { var e = load().lists.solutions; return e ? e.d : []; })).then(function (rows) {
-      (rows || []).forEach(function (r) { var p = 'page-elements/' + encodeURIComponent('product-detail-' + r.slug), e = load().lists[p]; if (r.slug && (!e || Date.now() - e.t > FRESH)) jget(p).then(function (d) { RGC.setList(p, d); }); });
+      (rows || []).forEach(function (r) { var p = 'page-elements/' + encodeURIComponent('product-detail-' + r.slug), e = load().lists[p]; if (r.slug && (!e || force || Date.now() - e.t > FRESH)) jget(p).then(function (d) { RGC.setList(p, d); }); });
     });
   }
   window.addEventListener('load', function () { setTimeout(warm, 1200); });
