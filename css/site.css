@@ -64,3 +64,11 @@ body.nav-open .rg-burger span:nth-child(3){transform:translateY(-7px) rotate(-45
 @media (min-width:3600px){ html{zoom:2.4} }
 
 @media (prefers-reduced-motion:reduce){ .rg69{transition:none!important} }
+
+/* ---- footer (tools/footer.html): links are anchors now, same look as the design's buttons ---- */
+.rg302{text-decoration:none}
+.rg302:hover,.rg288:hover{text-decoration:none}
+.rg-credit{border-top:1px solid #3a3d45;padding-top:16px;padding-bottom:22px}
+.rg-credit a{color:#fff}
+.rg-credit a:hover{color:#de4228}
+.rg-credit .rg-top{color:#d6c6b2;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12.5px}

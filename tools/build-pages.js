@@ -235,13 +235,17 @@ function assemble(viewKey, basePatch, groups) {
   return { html: out, defaults };
 }
 
+// one footer for every page (tools/footer.html)
+const FOOTER = fs.readFileSync(path.join(__dirname, 'footer.html'), 'utf8').replace('__YEAR__', String(new Date().getFullYear())).trim();
+const withFooter = html => html.replace(/<footer[\s\S]*<\/footer>/, () => FOOTER);
+
 function page(file, title, desc, bodyHtml, defaults, bodyClass) {
   return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
-    '<title>' + esc(title) + '</title>\n<meta name="description" content="' + escAttr(desc) + '">\n' +
+    '<title>' + esc(title) + '</title>\n<link rel="icon" type="image/png" sizes="64x64" href="images/favicon.png">\n<link rel="apple-touch-icon" href="images/apple-touch-icon.png">\n<meta name="description" content="' + escAttr(desc) + '">\n' +
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
     '<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">\n' +
     '<link rel="stylesheet" href="css/styles.css">\n<link rel="stylesheet" href="css/site.css">\n</head>\n' +
-    '<body data-page="' + escAttr(bodyClass) + '" data-state=\'' + JSON.stringify(defaults) + '\'>\n' + bodyHtml + '\n' +
+    '<body data-page="' + escAttr(bodyClass) + '" data-state=\'' + JSON.stringify(defaults) + '\'>\n' + withFooter(bodyHtml) + '\n' +
     (bodyClass === 'contact' ? '<script src="js/geo.js" defer></script>\n' : '') + '<script src="js/site.js" defer></script>\n</body>\n</html>\n';
 }
 

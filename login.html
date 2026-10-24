@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>CMS Login | RockGuard® HD Pipeline Protection</title>
+<link rel="icon" type="image/png" sizes="64x64" href="images/favicon.png">
+<link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+<link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+<div class="lg-page">
+
+  <!-- left: hero -->
+  <section class="lg-hero">
+    <img class="lg-hero-img" src="images/IMG_0097_crop.webp" alt="">
+    <div class="lg-hero-ov"></div>
+    <div class="lg-hero-in">
+      <div class="lg-tag"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Admin Access</div>
+      <h2>The Rock<br>Stops <span>Here.</span></h2>
+      <p>Manage your RockGuard® website content, products, project highlights and resources from one place.</p>
+      <div class="lg-stats">
+        <div><b>11<i>mm</i></b><span>Consistent thickness</span></div>
+        <div><b>75<i>+</i></b><span>Midstream approvals</span></div>
+        <div><b>45<i>+</i></b><span>Contractor approvals</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- right: login -->
+  <section class="lg-panel">
+    <div class="lg-accent"></div>
+    <div class="lg-inner">
+      <div class="lg-brand">
+        <img src="images/rockguard-hd-logo-tm2.webp" alt="RockGuard HD">
+        <span class="lg-div"></span>
+        <span class="lg-cms">Content<br>Management<br>System</span>
+      </div>
+
+      <h1>Admin <span>Login</span></h1>
+      <p class="lg-sub">Sign in to access the RockGuard CMS dashboard.</p>
+
+      <form id="loginForm" novalidate autocomplete="off">
+        <label class="lg-lab" for="username">Email Address</label>
+        <div class="lg-field">
+          <input id="username" name="username" type="email" placeholder="Enter your email" autocomplete="username">
+          <svg class="lg-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+        </div>
+
+        <label class="lg-lab" for="password">Password</label>
+        <div class="lg-field">
+          <input id="password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password">
+          <svg class="lg-ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+          <button type="button" class="lg-eye" id="eye" aria-label="Show password" aria-pressed="false">
+            <svg class="on" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="off" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20C5 20 1 12 1 12a18.5 18.5 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>
+          </button>
+        </div>
+
+        <label class="lg-robot"><input type="checkbox" id="robot"><span>I'm not a robot</span></label>
+
+        <div class="lg-msg" id="msg" role="alert" aria-live="polite"></div>
+
+        <div class="lg-btns">
+          <a class="lg-btn lg-cancel" href="index.html">Cancel</a>
+          <button class="lg-btn lg-go" id="go" type="submit">Login</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+
+<div class="lg-modal" id="ok" hidden>
+  <div class="lg-card">
+    <div class="lg-check">✓</div>
+    <h3>Login Successful!</h3>
+    <p>Opening the website with the CMS tools…</p>
+  </div>
+</div>
+<script src="js/login.js"></script>
+</body>
+</html>

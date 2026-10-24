@@ -1,0 +1,74 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;font-family:'Barlow',sans-serif;color:#2c2e35;background:#fff;-webkit-font-smoothing:antialiased}
+.lg-page{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);min-height:100vh}
+
+/* hero */
+.lg-hero{position:relative;overflow:hidden;background:#16181d;color:#fff;display:flex;align-items:flex-end}
+.lg-hero-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.lg-hero-ov{position:absolute;inset:0;background:linear-gradient(180deg,rgba(44,46,53,.55) 0%,rgba(30,31,37,.8) 55%,rgba(10,14,28,.94) 100%)}
+.lg-hero-in{position:relative;padding:clamp(32px,6vw,84px);max-width:760px}
+.lg-tag{display:inline-flex;align-items:center;gap:8px;background:#de4228;color:#fff;padding:7px 16px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:14px;margin-bottom:26px}
+.lg-hero h2{margin:0 0 20px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:clamp(44px,5.4vw,84px);line-height:.98;text-transform:uppercase}
+.lg-hero h2 span{color:#ff8a6e}
+.lg-hero p{margin:0 0 38px;font-size:clamp(16px,1.3vw,19px);line-height:1.6;max-width:520px;color:#e3e6ee}
+.lg-stats{display:flex;flex-wrap:wrap;gap:20px 48px;border-top:1px solid rgba(255,255,255,.25);padding-top:26px}
+.lg-stats b{display:block;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:clamp(34px,3.2vw,48px);line-height:1}
+.lg-stats i{font-style:normal;color:#ff8a6e}
+.lg-stats span{font-size:14px;color:#cfd3dd}
+
+/* panel */
+.lg-panel{position:relative;display:flex;align-items:center;justify-content:center;padding:48px clamp(20px,5vw,72px);background:#fff}
+.lg-accent{position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,#2c2e35,#de4228)}
+.lg-inner{width:100%;max-width:440px}
+.lg-brand{display:flex;align-items:center;gap:14px;margin-bottom:34px}
+.lg-brand img{height:56px;width:auto;max-width:230px;display:block}
+.lg-name{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:32px;color:#2c2e35;letter-spacing:.02em;line-height:1}
+.lg-name i{font-style:normal;color:#de4228}
+.lg-div{width:2px;height:44px;background:#D9DADD}
+.lg-cms{font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:12.5px;line-height:1.3;color:#5A5B60}
+.lg-inner h1{margin:0 0 6px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:clamp(38px,3.4vw,50px);line-height:1;text-transform:uppercase}
+.lg-inner h1 span{color:#de4228}
+.lg-sub{margin:0 0 28px;color:#5A5B60;font-size:16.5px}
+.lg-lab{display:block;margin:0 0 8px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:15px}
+.lg-field{position:relative;margin-bottom:20px}
+.lg-field input{width:100%;padding:14px 48px 14px 46px;border:1.5px solid #CECFD1;background:#fff;font:inherit;font-size:16px;color:#2c2e35;border-radius:0;outline:none;transition:border-color .15s,box-shadow .15s}
+.lg-field input:focus{border-color:#2c2e35;box-shadow:0 0 0 3px rgba(222,66,40,.18)}
+.lg-field.bad input{border-color:#de4228}
+.lg-ic{position:absolute;left:15px;top:50%;transform:translateY(-50%);color:#8a8c93;pointer-events:none}
+.lg-eye{position:absolute;right:0;top:0;height:100%;width:48px;border:0;background:none;cursor:pointer;color:#5A5B60;display:flex;align-items:center;justify-content:center;padding:0}
+.lg-eye:hover{color:#2c2e35}
+.lg-eye .off{display:none}.lg-eye.is-on .on{display:none}.lg-eye.is-on .off{display:block}
+.lg-robot{display:flex;align-items:center;gap:12px;border:1.5px solid #CECFD1;background:#faf4ec;padding:14px 16px;margin-bottom:8px;cursor:pointer;font-size:16px;font-weight:500;user-select:none}
+.lg-robot input{width:22px;height:22px;accent-color:#2c2e35;cursor:pointer}
+.lg-robot.bad{border-color:#de4228}
+.lg-msg{min-height:24px;margin:8px 0 14px;font-size:14.5px;color:#de4228}
+.lg-btns{display:flex;gap:12px}
+.lg-btn{flex:1;display:inline-flex;align-items:center;justify-content:center;padding:15px 20px;border:2px solid transparent;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.1em;text-transform:uppercase;font-size:17px;text-decoration:none;line-height:1.1}
+.lg-cancel{background:#fff;color:#2c2e35;border-color:#CECFD1}.lg-cancel:hover{border-color:#2c2e35}
+.lg-go{background:#de4228;color:#fff}.lg-go:hover{background:#2c2e35}
+.lg-go[disabled]{opacity:.65;cursor:wait}
+
+/* success popup */
+.lg-modal{position:fixed;inset:0;background:rgba(14,18,30,.66);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+.lg-card{background:#fff;width:min(420px,100%);padding:38px 30px;text-align:center;border-top:6px solid #1C8A45;box-shadow:0 24px 70px rgba(0,0,0,.45);animation:lgPop .25s ease-out}
+.lg-check{width:70px;height:70px;border-radius:50%;background:#1C8A45;color:#fff;font-size:38px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 18px}
+.lg-card h3{margin:0 0 8px;font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:30px;text-transform:uppercase}
+.lg-card p{margin:0;color:#5A5B60;font-size:16px}
+@keyframes lgPop{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* tablet / phone: hero becomes a short banner on top */
+@media (max-width:980px){
+  .lg-page{grid-template-columns:1fr}
+  .lg-hero{min-height:300px;align-items:flex-end}
+  .lg-hero-in{padding:32px 24px}
+  .lg-hero h2{font-size:clamp(36px,9vw,52px);margin-bottom:12px}
+  .lg-hero p,.lg-stats{display:none}
+  .lg-panel{padding:36px 20px 56px;align-items:flex-start}
+}
+@media (max-width:420px){ .lg-brand{flex-wrap:wrap} .lg-div{display:none} .lg-btns{flex-direction:column-reverse} }
+@media (min-width:1920px){ html{zoom:1.25} }
+@media (min-width:2400px){ html{zoom:1.6} }
+@media (min-width:3000px){ html{zoom:2} }
+@media (min-width:3600px){ html{zoom:2.4} }
