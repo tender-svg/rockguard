@@ -102,6 +102,9 @@
     host.addEventListener('mouseleave', function () { paused = false; });
     window.addEventListener('resize', function () { apply(false); });
     timer = setInterval(function () { if (!paused && !body.classList.contains('cms-editing')) step(1); }, 4000);
+    // the 3 copies at the end (endless loop) follow the photos of the first three slides (also after the CMS changed them)
+    function syncClones() { for (var i = 0; i < 3; i++) { var s = slides[i].querySelector('img'), c = slides[real + i].querySelector('img'); if (s && c && c.getAttribute('src') !== s.getAttribute('src')) c.setAttribute('src', s.getAttribute('src')); } }
+    document.addEventListener('rg-applied', syncClones); syncClones();
     apply(false);
     return { step: step };
   })();
