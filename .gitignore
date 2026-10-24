@@ -1,0 +1,12 @@
+.env
+.env.*
+node_modules/
+tools/node_modules/
+dist/
+*.log
+scratch/
+tmp/
+*.tmp
+test-output/
+tools/shots/
+.claude/
