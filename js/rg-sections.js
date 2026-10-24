@@ -108,7 +108,7 @@
   function applyAll() {
     if (editing() || Object.keys(dirtyLists).length || cfgDirty) return;
     lists.forEach(function (L) { var v = savedValue(L.id); if (v == null) return; var arr = parse(v, null); if (Array.isArray(arr)) renderList(L, arr); });
-    var c = parse(savedValue('sec-config'), null);
+    var c = SECTIONS_EDITABLE ? parse(savedValue('sec-config'), null) : null;
     if (c && typeof c === 'object') { cfg = { hidden: Array.isArray(c.hidden) ? c.hidden : [], custom: Array.isArray(c.custom) ? c.custom : [] }; }
     applyHidden(); placeCustom(); applied = true;
   }
@@ -132,7 +132,11 @@
       if (!L.addWrap && L.proto) { L.addWrap = ctl('<button type="button" class="dyn-add" data-rla>＋ Add item</button>', 'rl-addwrap'); L.box.parentNode.insertBefore(L.addWrap, L.box.nextSibling); L.addWrap.setAttribute('data-list', L.id); }
     });
   }
+  // Adding / removing whole sections is switched off on purpose (only the items of the lists can be added / removed): no controls are drawn,
+  // and a saved "sec-config" is not applied any more, so every section is always shown.
+  var SECTIONS_EDITABLE = false;
   function secControls() {
+    if (!SECTIONS_EDITABLE) return;
     $$(SEC + ',[data-csec]').forEach(function (s) {
       if ([].slice.call(s.children).some(function (c) { return c.classList.contains('rs-tools'); })) return;
       var id = s.getAttribute('data-sec-id') || s.getAttribute('data-csec'), custom = s.hasAttribute('data-csec');
