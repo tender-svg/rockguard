@@ -125,3 +125,16 @@ section.rg-hero{position:relative;overflow:hidden}
 .rg-herobg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .rg-heroov{position:absolute;inset:0;background:linear-gradient(90deg,rgba(44,46,53,.93) 0%,rgba(44,46,53,.78) 50%,rgba(44,46,53,.5) 100%)}
 section.rg-hero>.rg81,section.rg-hero>.rg113{position:relative;z-index:1}
+
+/* ---- mobile polish (checked at 320 / 375 / 414 / 768 px) ---- */
+@media (max-width:768px){
+  .rg127{margin-top:32px;flex-direction:column;align-items:stretch}
+  .rg128{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0;width:100%}
+  .rg128::-webkit-scrollbar{display:none}
+  .rg129{flex:none;white-space:nowrap;padding:16px 14px 14px;font-size:16px}
+  .rg183{padding:28px 16px 48px}
+  .rg185{padding:26px 20px 30px}
+  .rg187{flex-direction:column}
+  .rg188{width:100%;text-align:center}
+  .wb-hero{min-height:280px}
+}
