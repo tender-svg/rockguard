@@ -172,7 +172,7 @@
 
   /* ----- image badges ("Change image") and "managed in the dashboard" badges */
   var badges = [];
-  var DYN = [];   // card lists drawn from the CMS get their "edit in the Dashboard" badge here (added with the public lists step)
+  var DYN = [['.rg52', 'solutions', 'Edit solutions in the Dashboard'], ['[data-dyn="prod"]', 'solutions', 'Edit solutions in the Dashboard'], ['[data-dyn="sol"]', 'solutions', 'Edit solutions in the Dashboard'], ['[data-dyn="res"]', 'resources', 'Edit resources in the Dashboard'], ['[data-dyn="pm"]', 'stories', 'Edit project highlights in the Dashboard'], ['[data-vgroup="pj"]', 'stories', 'Edit this project in the Dashboard']];
   function offsetOf(el) { var x = 0, y = 0, n = el; while (n) { x += n.offsetLeft || 0; y += n.offsetTop || 0; n = n.offsetParent; } return { x: x, y: y }; }
   function visible(el) { if (el.closest('[hidden]')) return false; if (!el.getClientRects().length) return false; return el.checkVisibility ? el.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) : true; }
   function buildBadges() {

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>CMS Dashboard | RockGuard® HD</title>
+<link rel="icon" type="image/png" sizes="64x64" href="images/favicon.png">
+<link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+<div id="boot" class="db-boot">Loading the CMS…</div>
+
+<div id="app" hidden>
+  <header class="db-top">
+    <a class="db-brand" href="dashboard.html"><img class="db-logo" src="images/rockguard-hd-logo-footer-white.webp" alt="RockGuard HD"><span><em>CMS</em></span></a>
+    <button class="db-menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+    <div class="db-top-right">
+      <span class="db-user" id="who"></span>
+      <a class="db-btn db-btn-ghost" href="index.html" target="_blank" rel="noopener">View website ↗</a>
+      <button class="db-btn db-btn-dark" id="logoutBtn" type="button">Logout</button>
+    </div>
+  </header>
+  <div class="db-body">
+    <nav class="db-side" id="side" aria-label="CMS sections"></nav>
+    <main class="db-main" id="main"></main>
+  </div>
+</div>
+
+<div class="db-modal" id="modal" hidden>
+  <div class="db-modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="db-modal-head"><h2 id="modalTitle"></h2><button class="db-x" id="modalClose" type="button" aria-label="Close">×</button></div>
+    <form id="editor" novalidate>
+      <div class="db-modal-body" id="editorBody"></div>
+      <div class="db-modal-foot">
+        <span class="db-form-msg" id="formMsg" role="alert"></span>
+        <button class="db-btn db-btn-ghost" type="button" id="cancelBtn">Cancel</button>
+        <button class="db-btn db-btn-red" type="submit" id="saveBtn">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="db-toast" id="toast" role="status" aria-live="polite"></div>
+<script src="js/rg-dialog.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

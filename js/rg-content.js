@@ -26,7 +26,7 @@
   // the host that replaces the shipped state variants of a part of the page (see data-vgroup in tools/build-pages.js)
   function dropVariants(group) {
     var blocks = $$('[data-vgroup="' + group + '"]'); if (!blocks.length) return null;
-    var host = document.createElement('div'); host.setAttribute('data-dyn', group); host.style.display = 'contents';
+    var host = document.createElement('div'); host.setAttribute('data-dyn', group); host.style.display = 'block';
     blocks[0].parentNode.insertBefore(host, blocks[0]); blocks.forEach(function (b) { b.remove(); }); return host;
   }
 
