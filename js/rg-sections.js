@@ -137,17 +137,13 @@
       if ([].slice.call(s.children).some(function (c) { return c.classList.contains('rs-tools'); })) return;
       var id = s.getAttribute('data-sec-id') || s.getAttribute('data-csec'), custom = s.hasAttribute('data-csec');
       if (s.hidden) return;
-      var t = ctl('<button type="button" data-rs-remove="' + id + '">🗑 ' + (custom ? 'Delete this section' : 'Remove section') + '</button>', 'rs-tools'); s.appendChild(t);
-      var add = ctl('<button type="button" class="dyn-add" data-rs-add="' + id + '">＋ Add section here</button>', 'rs-add'); s.parentNode.insertBefore(add, s.nextSibling);
+      var t = ctl('<button type="button" data-rs-add="' + id + '">＋ Add section below</button><button type="button" data-rs-remove="' + id + '">🗑 ' + (custom ? 'Delete this section' : 'Remove section') + '</button>', 'rs-tools'); s.appendChild(t);
     });
     // removed sections: a bar to restore them
     $$(SEC).forEach(function (s) {
       if (!s.hidden) return; var id = s.getAttribute('data-sec-id');
       var bar = ctl('Removed section: <b>' + esc(secTitle(s)) + '</b> <button type="button" class="dyn-add" data-rs-restore="' + id + '">Restore</button>', 'rs-removed'); s.parentNode.insertBefore(bar, s);
     });
-    // the very first position
-    var first = $$(SEC + ',[data-csec]')[0];
-    if (first && !$('.rs-add[data-x="top"]')) first.parentNode.insertBefore(ctl('<button type="button" class="dyn-add" data-rs-add="top">＋ Add section at the top</button>', 'rs-add', 'top'), first);
   }
   function enter() {
     placeCustom(); applyHidden(); listControls(); secControls();
