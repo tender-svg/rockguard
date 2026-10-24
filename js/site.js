@@ -47,7 +47,6 @@
     if (t.hasAttribute('data-set')) {
       var patch; try { patch = JSON.parse(t.getAttribute('data-set')); } catch (err) { return; }
       setState(patch);
-      if ('cstep' in patch) window.scrollTo({ top: 0 });
       return;
     }
     if (t.hasAttribute('data-agree')) { toggleAgree(t); return; }
@@ -58,7 +57,7 @@
     else if (act === 'hl-up' || act === 'hl-down') stepPhoto(act === 'hl-down' ? 1 : -1, false);
     else if (act === 'toggle-sale') toggleSale(t);
     else if (act === 'c-next') creditNext();
-    else if (act === 'c-back') { setState({ cstep: Math.max(0, state.cstep - 1) }); window.scrollTo({ top: 0 }); }
+    else if (act === 'c-back') { setState({ cstep: Math.max(0, state.cstep - 1) }); toForm(); }
     else if (act === 'c-reset') creditReset();
     else if (act === 'form-reset') resetForm();
   });
@@ -239,8 +238,9 @@
     });
     host.innerHTML = html;
   }
+  function toForm() { var f = document.querySelector('section.rg195'); if (!f) return; var top = f.getBoundingClientRect().top + (window.pageYOffset || 0) - 100; window.scrollTo({ top: Math.max(0, top) }); }
   function creditNext() {
-    if (body.classList.contains('cms-editing')) { var cur = visible('[data-vgroup="cstep"]')[0]; if (cur && state.cstep < counts.cstep) { setState({ cstep: state.cstep + 1 }); window.scrollTo({ top: 0 }); } return; }   // edit mode: just look at the next step, nothing is checked or sent
+    if (body.classList.contains('cms-editing')) { var cur = visible('[data-vgroup="cstep"]')[0]; if (cur && state.cstep < counts.cstep) { setState({ cstep: state.cstep + 1 }); toForm(); } return; }   // edit mode: just look at the next step, nothing is checked or sent
     var block = visible('[data-vgroup="cstep"]')[0]; if (!block) return;
     var last = state.cstep === counts.cstep, first = checkFields(block), msg = '';
     if (first) msg = 'Please complete the highlighted required fields.';
@@ -248,7 +248,7 @@
     creditError(block, msg);
     if (msg) { if (first) first.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
     if (last) { creditSend(block); return; }
-    setState({ cstep: state.cstep + 1 }); window.scrollTo({ top: 0 });
+    setState({ cstep: state.cstep + 1 }); toForm();
   }
   // every field of the six steps (data-f = the key of the field), in one payload
   function creditValues() { var o = {}; all('[data-vgroup="cstep"] [data-f]').forEach(function (el) { var k = el.getAttribute('data-f'); if (o[k] == null || o[k] === '') o[k] = String(el.value || '').trim(); }); return o; }
@@ -266,13 +266,13 @@
     creditError(block, '');
     sendForm(p).then(function () {
       all('strong.rg44').forEach(function (n) { if (n.closest('[data-vstate*="csent\\":true"]')) n.textContent = 'IFI-' + Math.floor(100000 + Math.random() * 900000); });
-      setState({ csent: true }); window.scrollTo({ top: 0 });
+      setState({ csent: true }); toForm();
     }).catch(function (err) { creditError(block, failText(err)); }).then(function () { if (btn) { btn.disabled = false; btn.textContent = label; } });
   }
   function creditReset() {
     all('input,select').forEach(function (el) { if (el.form === null || el.closest('[data-vgroup="cstep"]')) { el.value = ''; markErr(el, false); } });
     agrees = {}; all('[data-agree]').forEach(paintAgree);
-    setState({ cstep: 0, csent: false }); window.scrollTo({ top: 0 });
+    setState({ cstep: 0, csent: false }); toForm();
   }
 
   function afterRender() {
