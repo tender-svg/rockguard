@@ -64,3 +64,6 @@ A new item made in the Dashboard gets its own page at once, drawn from the templ
 ## Mobile / tablet check
 - Checked with a real Chrome (Playwright, local pages only) at 320 / 375 / 414 / 768 px for home, products, a product page, resources, project highlights, a project page, contact, lunch & learn and credit application: no horizontal scrolling anywhere, the hamburger menu opens / closes and the Support sub menu opens by tap, forms are single column, cards stack. Fixes made from that check (`css/site.css`): the Resources filter tabs are one swipeable row (they wrapped into scattered rows), the project page's challenge / solution box has phone padding and full width tabs.
 - Edit mode (admin bar, toolbar) is designed for a computer screen.
+
+## Cookie banner + Privacy Policy
+First-visit banner (Accept / Deny / View preferences, Do Not Sell link, Global Privacy Control = deny), choice in localStorage rg_cookie_consent, reopened from footer "Cookie Preferences". privacy-policy.html covers cookies, storage, CMS login, ZoomInfo, forms, CCPA. ZoomInfo tag URL goes in ZOOMINFO_SRC in js/rg-consent.js.

@@ -349,7 +349,7 @@ const LOADER_BODY = '<div id="rg-loader" role="status" aria-live="polite" aria-l
 
 
 // background photo of the dark banner at the top of these pages (a normal CMS image: replace it with "Change image" in edit mode); the Products banner is drawn by js/rg-content.js
-const HERO = { resources: 'mainpic_mdfy', highlights: 'IMG_0097_crop', contact: 'RockGuard-HD-gallery-6', credit: 'RockGuard-HD-gallery-3', lunch: 'RockGuard-HD-gallery-11', project: 'RockGuard-HD-gallery-10' };
+const HERO = { resources: 'mainpic_mdfy', highlights: 'IMG_0097_crop', contact: 'RockGuard-HD-gallery-6', credit: 'RockGuard-HD-gallery-3', lunch: 'RockGuard-HD-gallery-11', project: 'RockGuard-HD-gallery-10', privacy: 'RockGuard-HD-gallery-1' };
 function withHero(html, pageKey) {
   if (!HERO[pageKey]) return html;
   const $h = cheerio.load('<div id="__h">' + html + '</div>', { _useHtmlParser2: true, decodeEntities: false, lowerCaseAttributeNames: true });
@@ -368,7 +368,7 @@ function page(file, title, desc, bodyHtml, defaults, bodyClass) {
     '<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">\n' +
     LOADER_HEAD + prefetch(bodyClass) + PRE_HOLD + '<link rel="stylesheet" href="css/styles.css">\n<link rel="stylesheet" href="css/site.css">\n<link rel="stylesheet" href="css/rg-motion.css">\n<link rel="stylesheet" href="css/cms.css">\n</head>\n' +
     '<body data-page="' + escAttr(bodyClass) + '" data-state=\'' + JSON.stringify(defaults) + '\'>\n' + LOADER_BODY + bodyHtml + '\n' +
-    (['contact', 'lunch', 'credit'].includes(bodyClass) ? '<script src="js/geo.js" defer></script>\n' : '') + '<script src="js/site.js" defer></script>\n<script src="js/rg-cache.js" defer></script>\n<script src="js/rg-motion.js" defer></script>\n<script src="js/rg-dialog.js" defer></script>\n<script src="js/rg-edit.js" defer></script>\n<script src="js/rg-content.js" defer></script>\n<script src="js/cms.js" defer></script>\n<script src="js/rg-sections.js" defer></script>\n<script src="js/rg-toolbar.js" defer></script>\n</body>\n</html>\n';
+    (['contact', 'lunch', 'credit'].includes(bodyClass) ? '<script src="js/geo.js" defer></script>\n' : '') + '<script src="js/site.js" defer></script>\n<script src="js/rg-cache.js" defer></script>\n<script src="js/rg-consent.js" defer></script>\n<script src="js/rg-motion.js" defer></script>\n<script src="js/rg-dialog.js" defer></script>\n<script src="js/rg-edit.js" defer></script>\n<script src="js/rg-content.js" defer></script>\n<script src="js/cms.js" defer></script>\n<script src="js/rg-sections.js" defer></script>\n<script src="js/rg-toolbar.js" defer></script>\n</body>\n</html>\n';
 }
 
 // ------------------------------------------------------------------ write everything
@@ -384,6 +384,15 @@ for (const [key, p] of Object.entries(PAGES)) {
   const a = assemble('highlights', { hlMode: 'detail', hl: 0 }, GROUPS.project(0));
   const $t = parse(a.html); $t('[data-vgroup="pj"]').html('').removeAttr('hidden').attr('style', 'min-height:60vh');
   write('project-highlight.html', page('project-highlight.html', 'Project Highlight | RockGuard® HD Pipeline Protection', 'RockGuard® HD and PipeWeights project highlight.', $t('#__root').html(), a.defaults, 'project'));
+}
+
+// privacy-policy.html: cookie / privacy policy (tools/privacy.html) in the page shell of the site; js/rg-consent.js is the cookie banner
+{
+  const a = assemble('contact', {}, []);
+  const $t = parse(a.html);
+  $t('main').html(fs.readFileSync(path.join(__dirname, 'privacy.html'), 'utf8').replace('__DATE__', new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })));
+  const html = $t('#__root').html().split('color:#111111;border-bottom:2px solid #de4228').join('color:#6b4a35;border-bottom:2px solid transparent').split('background:#faf4ec;color:#de4228').join('background:#fff;color:#2c2e35');
+  write('privacy-policy.html', page('privacy-policy.html', 'Privacy Policy | RockGuard® HD Pipeline Protection', 'How the RockGuard® HD website uses cookies and browser storage, the third-party services it uses and what happens to the information you send us.', html, a.defaults, 'privacy'));
 }
 
 // solution-reference.html: the template of every solution made in the Dashboard (/product-detail-<slug>.html is rewritten to it, see vercel.json); js/rg-content.js (solutionRef) draws the solution of the slug
