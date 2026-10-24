@@ -151,15 +151,49 @@
     });
     return first;
   }
+  /* ---- sending: the backend (POST /api/contact, ContactController) mails the form through the SMTP account of Dashboard > Email Configuration and
+   *      copies the CC rows of that form (form_type: support / lunch_learn / credit_application). The "sent" screen shows only after the mail went out. */
+  var GEO = function () { return window.RG_CODES || { country: {}, us: {}, ca: {} }; };
+  // the CC rules of the Dashboard use codes: country US / CA ..., US state TX ...
+  function countryCode(v) {
+    v = String(v || '').trim(); if (!v) return ''; var g = GEO(), up = v.toUpperCase().replace(/\./g, '');
+    if (g.country[v]) return g.country[v];
+    if (up === 'USA' || up === 'US' || up === 'UNITED STATES' || up === 'UNITED STATES OF AMERICA') return 'US';
+    return v.length <= 3 ? up : v;
+  }
+  function stateCode(country, v) {
+    v = String(v || '').trim(); if (!v) return ''; var g = GEO(), t = g.us[v] || (country === 'CA' ? g.ca[v] : '');
+    return t || (v.length <= 3 ? v.toUpperCase() : v);
+  }
+  function sendForm(payload) {
+    return fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || j.success === false) throw new Error(j.message || j.error || ('Error ' + r.status)); return j; }); });
+  }
+  var failText = function (err) { return 'Sorry, your message could not be sent (' + (err && err.message || 'network error') + '). Please try again in a moment or call us.'; };
+  function fieldVal(form, n) { var el = form.elements[n]; return el ? String(el.value || '').trim() : ''; }
+  function payloadOf(kind, form) {
+    var v = function (n) { return fieldVal(form, n); }, join = function () { return [].slice.call(arguments).filter(Boolean).join(' '); };
+    var cc = countryCode(v('country')), st = stateCode(cc, v('state'));
+    if (kind === 'contact') {
+      return { form_type: 'support', subject: v('subject') || 'Contact form', name: v('name'), email: v('email'), phone: v('phone'), company: v('company'), project_country: cc, project_state: st, project_city: v('city'), company_address: v('address'), message: v('message') };
+    }
+    return { form_type: 'lunch_learn', subject: 'Lunch & Learn request', name: join(v('first'), v('last')), email: v('email'), phone: v('phone'), company: v('company'), product: v('products'), project_country: cc, project_state: st, project_city: v('city'),
+      message: ['Title: ' + v('title'), 'People attending: ' + v('attending'), v('date') && 'Preferred date: ' + v('date'), v('notes') && 'Notes: ' + v('notes')].filter(Boolean).join('\n') };
+  }
   document.addEventListener('submit', function (e) {
     var form = e.target, kind = form.getAttribute('data-submit'); if (!kind) return;
     e.preventDefault();
     var first = checkFields(form);
     if (first) { first.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
-    var nameEl = form.querySelector('[name="name"],[name="first"]'), name = nameEl ? nameEl.value.trim().split(' ')[0] : '';
-    all('[data-fill="name"]').forEach(function (s) { s.textContent = name; });
-    var patch = {}; patch[kind === 'contact' ? 'sent' : 'lunchSent'] = true; setState(patch);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    var btn = form.querySelector('button[type="submit"]'), label = btn ? btn.textContent : '', msg = form.querySelector('.form-err');
+    if (!msg) { msg = document.createElement('div'); msg.className = 'form-err'; msg.setAttribute('role', 'alert'); msg.style.cssText = 'color:#de4228;font-size:15px;margin-top:12px;font-weight:600'; (btn ? btn.parentNode : form).appendChild(msg); }
+    msg.textContent = ''; if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    sendForm(payloadOf(kind, form)).then(function () {
+      var nameEl = form.elements.name || form.elements.first, name = nameEl ? nameEl.value.trim().split(' ')[0] : '';
+      all('[data-fill="name"]').forEach(function (n) { n.textContent = name; });
+      var patch = {}; patch[kind === 'contact' ? 'sent' : 'lunchSent'] = true; setState(patch);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }).catch(function (err) { msg.textContent = failText(err); }).then(function () { if (btn) { btn.disabled = false; btn.textContent = label; } });
   });
   function resetForm() {
     all('form[data-submit]').forEach(function (f) { f.reset(); });
@@ -211,11 +245,27 @@
     else if (last && !(agrees.agT && agrees.agG && agrees.agS)) msg = 'Please accept the three agreements in Section 5 (Terms & Guaranty) to submit.';
     creditError(block, msg);
     if (msg) { if (first) first.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
-    if (last) {
-      all('strong.rg44').forEach(function (s) { if (s.closest('[data-vstate*="csent\\":true"]')) s.textContent = 'IFI-' + Math.floor(100000 + Math.random() * 900000); });
-      setState({ csent: true }); window.scrollTo({ top: 0 }); return;
-    }
+    if (last) { creditSend(block); return; }
     setState({ cstep: state.cstep + 1 }); window.scrollTo({ top: 0 });
+  }
+  // every field of the six steps (data-f = the key of the field), in one payload
+  function creditValues() { var o = {}; all('[data-vgroup="cstep"] [data-f]').forEach(function (el) { var k = el.getAttribute('data-f'); if (o[k] == null || o[k] === '') o[k] = String(el.value || '').trim(); }); return o; }
+  function creditSend(block) {
+    var c = creditValues(), cc = countryCode(c.country), btn = block.querySelector('[data-act="c-next"]'), label = btn ? btn.textContent : '';
+    var p = { form_type: 'credit_application', subject: 'Credit Application', name: c.sname || c.company, email: c.email, phone: c.phone, company: c.company, product: c.products, message: '',
+      company_address: c.addr, project_country: cc, project_state: stateCode(cc, c.state), project_city: c.city, zip: c.zip, county: c.county, fax: c.fax, salesperson: c.sales, date_started: c.started,
+      mailing_address: c.maddr, mailing_city: c.mcity, mailing_state: c.mstate, mailing_zip: c.mzip, owners: c.owners, fed_tax_id: c.taxid, duns: c.duns, accounting_contact: c.acct,
+      business_type: c.btype, credit_amount: c.amount, po_required: c.po,
+      ref1_company: c.r1co, ref1_email: c.r1em, ref1_phone: c.r1ph, ref2_company: c.r2co, ref2_email: c.r2em, ref2_phone: c.r2ph, ref3_company: c.r3co, ref3_email: c.r3em, ref3_phone: c.r3ph,
+      bank_name: c.bank, bank_phone: c.bphone, bank_account: c.bacct, bank_contact: c.bcontact, bank_address: c.baddr, bank_city: c.bcity, bank_state: c.bstate, bank_zip: c.bzip,
+      tax_business_type: c.taxbiz, tax_exempt_all: c.exall, tax_exempt_some: c.exsome, agree_terms: agrees.agT ? 'Yes' : '', agree_guaranty: agrees.agG ? 'Yes' : '', agree_tos: agrees.agS ? 'Yes' : '',
+      guarantor_name: c.gname, guarantor_title: c.gtitle, sign_name: c.sname, sign_signature: c.sig, sign_title: c.stitle };
+    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    creditError(block, '');
+    sendForm(p).then(function () {
+      all('strong.rg44').forEach(function (n) { if (n.closest('[data-vstate*="csent\\":true"]')) n.textContent = 'IFI-' + Math.floor(100000 + Math.random() * 900000); });
+      setState({ csent: true }); window.scrollTo({ top: 0 });
+    }).catch(function (err) { creditError(block, failText(err)); }).then(function () { if (btn) { btn.disabled = false; btn.textContent = label; } });
   }
   function creditReset() {
     all('input,select').forEach(function (el) { if (el.form === null || el.closest('[data-vgroup="cstep"]')) { el.value = ''; markErr(el, false); } });
