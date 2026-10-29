@@ -164,8 +164,71 @@
     v = String(v || '').trim(); if (!v) return ''; var g = GEO(), t = g.us[v] || (country === 'CA' ? g.ca[v] : '');
     return t || (v.length <= 3 ? v.toUpperCase() : v);
   }
-  function sendForm(payload) {
-    return fetch('/api/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+  /* ---- Turnstile & Honeypot bot protection ---- */
+  var CF_SITEKEY = '0x4AAAAAAFrgpAvn0SGkLylt';
+  function getTurnstileToken(container) {
+    var el = container ? container.querySelector('[name="cf-turnstile-response"]') : document.querySelector('[name="cf-turnstile-response"]');
+    if (el && el.value) return el.value;
+    if (window.turnstile && typeof window.turnstile.getResponse === 'function') {
+      try { return window.turnstile.getResponse() || ''; } catch (e) {}
+    }
+    return '';
+  }
+  function getHoneypot(container) {
+    var el = (container && container.querySelector('input[name="website_hp"]')) || document.querySelector('input[name="website_hp"]');
+    return el ? (el.value || '') : '';
+  }
+  function resetTurnstile() {
+    if (window.turnstile && typeof window.turnstile.reset === 'function') {
+      try { window.turnstile.reset(); } catch (e) {}
+    }
+  }
+  function injectBotProtection() {
+    if (!document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]')) {
+      var s = document.createElement('script');
+      s.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=auto';
+      s.async = true; s.defer = true;
+      document.head.appendChild(s);
+    }
+    all('form[data-submit]').forEach(function (form) {
+      if (!form.querySelector('input[name="website_hp"]')) {
+        var hp = document.createElement('div');
+        hp.style.cssText = 'display:none !important; visibility:hidden !important; opacity:0; position:absolute; left:-9999px; height:0; width:0; overflow:hidden;';
+        hp.setAttribute('aria-hidden', 'true');
+        hp.innerHTML = '<input type="text" name="website_hp" id="website_hp" tabindex="-1" autocomplete="off" value="" />';
+        form.insertBefore(hp, form.firstChild);
+      }
+      if (!form.querySelector('.cf-turnstile')) {
+        var btn = form.querySelector('button[type="submit"]');
+        if (btn) {
+          var cf = document.createElement('div');
+          cf.className = 'cf-turnstile';
+          cf.setAttribute('data-sitekey', CF_SITEKEY);
+          cf.setAttribute('data-theme', 'light');
+          cf.style.cssText = 'margin-bottom:14px;';
+          btn.parentNode.insertBefore(cf, btn);
+          if (window.turnstile && typeof window.turnstile.render === 'function') {
+            try { window.turnstile.render(cf); } catch (e) {}
+          }
+        }
+      }
+    });
+    var creditForm = document.querySelector('section.rg195');
+    if (creditForm && !creditForm.querySelector('input[name="website_hp"]')) {
+      var hp2 = document.createElement('div');
+      hp2.style.cssText = 'display:none !important; visibility:hidden !important; opacity:0; position:absolute; left:-9999px; height:0; width:0; overflow:hidden;';
+      hp2.setAttribute('aria-hidden', 'true');
+      hp2.innerHTML = '<input type="text" name="website_hp" id="website_hp" tabindex="-1" autocomplete="off" value="" />';
+      creditForm.insertBefore(hp2, creditForm.firstChild);
+    }
+  }
+
+  function sendForm(payload, endpoint) {
+    endpoint = endpoint || '/api/contact';
+    var isFormData = typeof FormData !== 'undefined' && payload instanceof FormData;
+    var opts = { method: 'POST', body: isFormData ? payload : JSON.stringify(payload) };
+    if (!isFormData) opts.headers = { 'Content-Type': 'application/json' };
+    return fetch(endpoint, opts)
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok || j.success === false) throw new Error(j.message || j.error || ('Error ' + r.status)); return j; }); });
   }
   var failText = function (err) { return 'Sorry, your message could not be sent (' + (err && err.message || 'network error') + '). Please try again in a moment or call us.'; };
@@ -173,11 +236,17 @@
   function payloadOf(kind, form) {
     var v = function (n) { return fieldVal(form, n); }, join = function () { return [].slice.call(arguments).filter(Boolean).join(' '); };
     var cc = countryCode(v('country')), st = stateCode(cc, v('state'));
+    var turnstileToken = getTurnstileToken(form);
+    var hp = getHoneypot(form);
     if (kind === 'contact') {
-      return { form_type: 'support', subject: v('subject') || 'Contact form', name: v('name'), email: v('email'), phone: v('phone'), company: v('company'), project_country: cc, project_state: st, project_city: v('city'), company_address: v('address'), message: v('message') };
+      return { form_type: 'support', subject: v('subject') || 'Contact form', name: v('name'), email: v('email'), phone: v('phone'), company: v('company'),
+        project_country: cc, project_state: st, project_city: v('city'), company_address: v('address'), message: v('message'),
+        captcha_token: turnstileToken, website_hp: hp };
     }
-    return { form_type: 'lunch_learn', subject: 'Lunch & Learn request', name: join(v('first'), v('last')), email: v('email'), phone: v('phone'), company: v('company'), product: v('products'), project_country: cc, project_state: st, project_city: v('city'),
-      message: ['Title: ' + v('title'), 'People attending: ' + v('attending'), v('date') && 'Preferred date: ' + v('date'), v('notes') && 'Notes: ' + v('notes')].filter(Boolean).join('\n') };
+    return { form_type: 'lunch_learn', subject: 'Lunch & Learn request', name: join(v('first'), v('last')), email: v('email'), phone: v('phone'), company: v('company'), product: v('products'),
+      project_country: cc, project_state: st, project_city: v('city'),
+      message: ['Title: ' + v('title'), 'People attending: ' + v('attending'), v('date') && 'Preferred date: ' + v('date'), v('notes') && 'Notes: ' + v('notes')].filter(Boolean).join('\n'),
+      captcha_token: turnstileToken, website_hp: hp };
   }
   document.addEventListener('submit', function (e) {
     var form = e.target, kind = form.getAttribute('data-submit'); if (!kind) return;
@@ -189,6 +258,7 @@
     if (!msg) { msg = document.createElement('div'); msg.className = 'form-err'; msg.setAttribute('role', 'alert'); msg.style.cssText = 'color:#de4228;font-size:15px;margin-top:12px;font-weight:600'; (btn ? btn.parentNode : form).appendChild(msg); }
     msg.textContent = ''; if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
     sendForm(payloadOf(kind, form)).then(function () {
+      resetTurnstile();
       var nameEl = form.elements.name || form.elements.first, name = nameEl ? nameEl.value.trim().split(' ')[0] : '';
       all('[data-fill="name"]').forEach(function (n) { n.textContent = name; });
       var patch = {}; patch[kind === 'contact' ? 'sent' : 'lunchSent'] = true; setState(patch);
@@ -197,6 +267,7 @@
   });
   function resetForm() {
     all('form[data-submit]').forEach(function (f) { f.reset(); });
+    resetTurnstile();
     var patch = {}; if ('sent' in state) patch.sent = false; if ('lunchSent' in state) patch.lunchSent = false; setState(patch);
   }
 
@@ -254,6 +325,8 @@
   function creditValues() { var o = {}; all('[data-vgroup="cstep"] [data-f]').forEach(function (el) { var k = el.getAttribute('data-f'); if (o[k] == null || o[k] === '') o[k] = String(el.value || '').trim(); }); return o; }
   function creditSend(block) {
     var c = creditValues(), cc = countryCode(c.country), btn = block.querySelector('[data-act="c-next"]'), label = btn ? btn.textContent : '';
+    var turnstileToken = getTurnstileToken(block);
+    var hp = getHoneypot(block);
     var p = { form_type: 'credit_application', subject: 'Credit Application', name: c.sname || c.company, email: c.email, phone: c.phone, company: c.company, product: c.products, message: '',
       company_address: c.addr, project_country: cc, project_state: stateCode(cc, c.state), project_city: c.city, zip: c.zip, county: c.county, fax: c.fax, salesperson: c.sales, date_started: c.started,
       mailing_address: c.maddr, mailing_city: c.mcity, mailing_state: c.mstate, mailing_zip: c.mzip, owners: c.owners, fed_tax_id: c.taxid, duns: c.duns, accounting_contact: c.acct,
@@ -261,10 +334,12 @@
       ref1_company: c.r1co, ref1_email: c.r1em, ref1_phone: c.r1ph, ref2_company: c.r2co, ref2_email: c.r2em, ref2_phone: c.r2ph, ref3_company: c.r3co, ref3_email: c.r3em, ref3_phone: c.r3ph,
       bank_name: c.bank, bank_phone: c.bphone, bank_account: c.bacct, bank_contact: c.bcontact, bank_address: c.baddr, bank_city: c.bcity, bank_state: c.bstate, bank_zip: c.bzip,
       tax_business_type: c.taxbiz, tax_exempt_all: c.exall, tax_exempt_some: c.exsome, agree_terms: agrees.agT ? 'Yes' : '', agree_guaranty: agrees.agG ? 'Yes' : '', agree_tos: agrees.agS ? 'Yes' : '',
-      guarantor_name: c.gname, guarantor_title: c.gtitle, sign_name: c.sname, sign_signature: c.sig, sign_title: c.stitle };
+      guarantor_name: c.gname, guarantor_title: c.gtitle, sign_name: c.sname, sign_signature: c.sig, sign_title: c.stitle,
+      captcha_token: turnstileToken, website_hp: hp };
     if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
     creditError(block, '');
     sendForm(p).then(function () {
+      resetTurnstile();
       all('strong.rg44').forEach(function (n) { if (n.closest('[data-vstate*="csent\\":true"]')) n.textContent = 'IFI-' + Math.floor(100000 + Math.random() * 900000); });
       setState({ csent: true }); toForm();
     }).catch(function (err) { creditError(block, failText(err)); }).then(function () { if (btn) { btn.disabled = false; btn.textContent = label; } });
@@ -272,6 +347,7 @@
   function creditReset() {
     all('input,select').forEach(function (el) { if (el.form === null || el.closest('[data-vgroup="cstep"]')) { el.value = ''; markErr(el, false); } });
     agrees = {}; all('[data-agree]').forEach(paintAgree);
+    resetTurnstile();
     setState({ cstep: 0, csent: false }); toForm();
   }
 
@@ -279,6 +355,8 @@
     if (state.cstep === counts.cstep && !state.csent) buildSummary();
     all('[data-agree]').forEach(paintAgree);
     applySearch();
+    injectBotProtection();
   }
   render();
+  injectBotProtection();
 })();

@@ -393,9 +393,11 @@
   }
   function drawEmail() {
     var c = emailCfg || {}, rows = ccAll.map(function (e, i) { return e.form === ccForm ? ccRow(e, i) : ''; }).join('');
+    var recEmail = c.recipient_email || c.from_email || '';
     $('#main').innerHTML = '<div class="db-head"><div><h1>Email Configuration</h1><p>The mail account the website forms are sent through, and who gets a copy of each form.</p></div></div>' +
       '<form class="db-panel" id="emailForm" novalidate><h2>SMTP</h2><div class="db-grid2"><label class="db-field"><span>SMTP host</span><input type="text" name="smtp_host" value="' + esc(c.smtp_host) + '" placeholder="e.g. smtp.gmail.com"></label><label class="db-field"><span>Port</span><input type="number" name="smtp_port" value="' + esc(c.smtp_port) + '" placeholder="587"></label></div>' +
       '<label class="db-field"><span>SMTP username</span><input type="text" name="smtp_username" value="' + esc(c.smtp_username) + '" placeholder="your@email.com" autocomplete="off"><small>This is also the "From" address of the form emails, and the address they are delivered to.</small></label>' +
+      '<label class="db-field" for="smtp-recipient-email"><span>Recipient Email (Inquiry Inbox)</span><input type="email" id="smtp-recipient-email" name="recipient_email" value="' + esc(recEmail) + '" placeholder="e.g. info@yourdomain.com" autocomplete="off"><small>Inquiries from the website contact forms will be sent to this email address.</small></label>' +
       '<label class="db-field"><span>SMTP password ' + (c.smtp_password_set ? '<b class="db-okc">(saved, leave blank to keep it)</b>' : '') + '</span><input type="password" name="smtp_password" placeholder="' + (c.smtp_password_set ? '••••••••' : 'Enter the SMTP password') + '" autocomplete="new-password"></label>' +
       '<h2>CC mail</h2><p class="db-sub">Each form keeps its own list. A row needs a product or a region (or both): with both set, the visitor\'s choice must match both for the person to get a copy.</p>' +
       '<div class="db-tabs">' + ccForms().map(function (f) { return '<button type="button" class="' + (ccForm === f[0] ? 'on' : '') + '" data-ccform="' + f[0] + '">' + esc(f[1]) + '</button>'; }).join('') + '</div>' +
@@ -420,7 +422,9 @@
       else if ((e.type === 'us_state' || e.type === 'country') && !e.values.length) bad = f2 + ': enter the ' + (e.type === 'us_state' ? 'state' : 'country') + ' codes for ' + e.email + '.';
     });
     if (bad) { msg.textContent = bad; return; }
+    var recVal = (f.elements.recipient_email ? f.elements.recipient_email.value : ($('#smtp-recipient-email') ? $('#smtp-recipient-email').value : '')).trim() || null;
     var port = parseInt(f.elements.smtp_port.value, 10), body = { provider_mode: 'smtp', smtp_host: f.elements.smtp_host.value.trim() || null, smtp_port: port || null, smtp_username: f.elements.smtp_username.value.trim() || null,
+      recipient_email: recVal, from_email: recVal,
       cc_emails: ccAll.filter(function (e) { return e.email; }).map(function (e) { return { name: e.name, email: e.email, form: e.form, type: e.type, values: e.values, products: e.products }; }) };
     if (f.elements.smtp_password.value) body.smtp_password = f.elements.smtp_password.value;
     btn.disabled = true; btn.textContent = 'Saving…';

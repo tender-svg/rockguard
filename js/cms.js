@@ -290,4 +290,40 @@
     document.addEventListener('input', onInput); document.addEventListener('keydown', onKey, true); document.addEventListener('paste', onPaste, true); document.addEventListener('click', onClickCapture, true);
     if (location.hash === '#edit') setEditing(true);
   });
+
+  /* ---------------------------------------------------------------- Baselok CMS Email Configuration Helpers */
+  function renderSmtpConfigFields(config) {
+    config = config || {};
+    var val = config.recipient_email || config.from_email || '';
+    return '<label class="db-field" for="smtp-recipient-email"><span>Recipient Email (Inquiry Inbox)</span>' +
+      '<input type="email" id="smtp-recipient-email" name="recipient_email" value="' + esc(val) + '" placeholder="e.g. info@yourdomain.com" autocomplete="off">' +
+      '<small>Inquiries from the website contact forms will be sent to this email address.</small></label>';
+  }
+  function loadEmailConfig() {
+    return fetch('/api/v2/email-config').then(function (r) { return r.json(); }).then(function (config) {
+      config = config || {};
+      var el = document.getElementById('smtp-recipient-email');
+      if (el) el.value = config.recipient_email || config.from_email || '';
+      return config;
+    });
+  }
+  function saveEmailConfig(payload) {
+    payload = payload || {};
+    var el = document.getElementById('smtp-recipient-email');
+    if (el) {
+      var v = (el.value || '').trim();
+      payload.recipient_email = v || null;
+      payload.from_email = v || null;
+    }
+    return fetch('/api/v2/email-config', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .then(function (r) { return r.json(); });
+  }
+  window.renderSmtpConfigFields = renderSmtpConfigFields;
+  window.loadEmailConfig = loadEmailConfig;
+  window.saveEmailConfig = saveEmailConfig;
+  if (window.RGCMS) {
+    window.RGCMS.renderSmtpConfigFields = renderSmtpConfigFields;
+    window.RGCMS.loadEmailConfig = loadEmailConfig;
+    window.RGCMS.saveEmailConfig = saveEmailConfig;
+  }
 })();
