@@ -38,4 +38,4 @@ Dated list of changes to this site. Details of bigger features go in CHANGES.md.
 - 2026-10-29: Reverted Products features and benefits layout in `css/styles.css` (`.rg106`): Removed `align-items:start` to restore original uniform equal-height grid card layout across all product pages.
 - 2026-10-29: Footer CMS edit mode refinements (`js/rg-sections.js`, `css/cms.css`): Hidden the `+ Add item` button for footer link lists (`g-rl-footer-*`). Repositioned the `🔗 Link` button to the right side (`right: 22px; top: 50%`) with dedicated right padding on each footer item so the button never overlaps or covers the link text.
 - 2026-10-29: Products Features & Benefits layout (`css/styles.css`): Updated `.rg106` to a 2-column grid (`repeat(2, minmax(0, 1fr))`) with 20px gap (1 column on mobile <=768px), preventing 4 cramped columns per row and giving cards generous horizontal space to display cleanly.
-
+- 2026-10-29: Compact cookie banner styling (`css/site.css`): Reduced banner width from 410px to 330px, reduced padding, heading, body text size and button heights to make the banner sleek, modern, and unobtrusive on the screen.
