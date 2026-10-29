@@ -135,10 +135,14 @@ body.cms-editing [data-cms-link]:hover{outline:2px dashed #2c2e35;outline-offset
 #cms-text-toolbar .tb-arrows button{width:100%;height:15px;border-radius:0;background:transparent;color:#333;font-size:8px}
 #cms-text-toolbar .tb-arrows button:hover{background:#de4228;color:#fff}
 #cms-text-toolbar button.sw{width:30px;border:2px solid #6b7480;background:#000}
+#cms-text-toolbar button.sw:hover{border-color:#fff!important;outline:1px solid #fff}
 .rgtb-menu{position:fixed;z-index:2147483200;background:#2b3640;border:1px solid rgba(255,255,255,.2);border-radius:6px;box-shadow:0 6px 16px rgba(0,0,0,.5);min-width:150px;padding:4px 0;font:600 14px/1 'Barlow',Arial,sans-serif;color:#fff}
 .rgtb-menu[hidden]{display:none}
 .rgtb-menu .opt{padding:8px 14px;cursor:pointer;display:flex;align-items:center;gap:9px;text-transform:none}
 .rgtb-menu .opt:hover{background:#de4228}.rgtb-menu .opt.active{background:rgba(222,66,40,.55)}
+#rgtb-picker .presets{display:flex;gap:6px;margin-top:10px;justify-content:center}
+#rgtb-picker .presets button{width:22px;height:22px;border-radius:4px;border:1px solid rgba(255,255,255,.4);cursor:pointer;padding:0}
+#rgtb-picker .presets button:hover{transform:scale(1.18);border-color:#fff}
 #rgtb-picker{position:fixed;z-index:2147483300;width:240px;background:#2b2b2b;border-radius:8px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.45);font-family:Arial,sans-serif}
 #rgtb-picker *{box-sizing:border-box}
 #rgtb-picker .sv{position:relative;width:100%;height:130px;border-radius:5px;cursor:crosshair;overflow:hidden}
@@ -180,8 +184,10 @@ body.cms-editing [data-rit],body.cms-editing [data-sec-id],body.cms-editing [dat
 .rl-x{position:absolute;top:-10px;right:-10px;z-index:40;width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:#de4228;color:#fff;cursor:pointer;font-size:16px;line-height:1;padding:0;font-family:Arial,sans-serif}
 .rl-x:hover{background:#2c2e35}
 .rl-photo{position:absolute;left:8px;bottom:8px;z-index:40}
-.rl-link{position:absolute;left:8px;top:-12px;z-index:40;padding:3px 10px;font-size:12px}
+.rl-link{position:absolute;right:22px;top:50%;transform:translateY(-50%);z-index:40;padding:2px 8px;font-size:11.5px;line-height:1.2;white-space:nowrap}
 .rl-addwrap{margin:14px 0;text-align:left}
+footer .rl-addwrap,.rg293 .rl-addwrap,[data-list^="g-rl-footer"]{display:none!important}
+body.cms-editing .rg301 [data-rit]{padding-right:85px;min-height:26px;display:inline-flex;align-items:center}
 .rs-tools{position:absolute;top:10px;right:10px;z-index:60;display:flex;gap:8px}
 .rs-tools button{border:2px solid #fff;background:#2c2e35;color:#fff;padding:7px 14px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;font-size:13px}
 .rs-tools button:hover{background:#de4228}

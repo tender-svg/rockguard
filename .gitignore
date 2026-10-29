@@ -10,3 +10,4 @@ tmp/
 test-output/
 tools/shots/
 .claude/
+*.backup.*

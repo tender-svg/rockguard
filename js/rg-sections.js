@@ -129,7 +129,7 @@
   function listControls() {
     lists.forEach(function (L) {
       itemControls(L);
-      if (!L.addWrap && L.proto) { L.addWrap = ctl('<button type="button" class="dyn-add" data-rla>＋ Add item</button>', 'rl-addwrap'); L.box.parentNode.insertBefore(L.addWrap, L.box.nextSibling); L.addWrap.setAttribute('data-list', L.id); }
+      if (!L.addWrap && L.proto && !/^g-rl-footer/.test(L.id) && !L.box.closest('footer, .rg293')) { L.addWrap = ctl('<button type="button" class="dyn-add" data-rla>＋ Add item</button>', 'rl-addwrap'); L.box.parentNode.insertBefore(L.addWrap, L.box.nextSibling); L.addWrap.setAttribute('data-list', L.id); }
     });
   }
   // Adding / removing whole sections is switched off on purpose (only the items of the lists can be added / removed): no controls are drawn,

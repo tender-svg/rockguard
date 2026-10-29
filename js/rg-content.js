@@ -334,9 +334,12 @@
     if (m) return { desc: text.slice(0, m.index).trim(), body: text.slice(m.index + m[0].length).trim() };
     return isArt(type) ? { desc: '', body: text.trim() } : { desc: text.trim(), body: '' };
   };
+  var PHONE_RE = /\[phone:([^\]]+)\]/i;
+  var CTALBL_RE = /\[ctalabel:([^\]]+)\]/i;
   function articleOf(r) {
     var p = PROD_RE.exec(r.description || ''), sp = splitDesc(String(r.description || '').replace(PROD_RE, ''), r.document_type);
-    return { id: r.id, title: r.title || '', type: r.document_type || '', slug: slugify(r.title), product: p ? p[1] : 'all', desc: sp.desc, body: sp.body, file: r.file_url || '', thumb: r.thumbnail_url || '', date: r.published_date || '' };
+    var ph = PHONE_RE.exec(r.description || ''), cl = CTALBL_RE.exec(r.description || '');
+    return { id: r.id, title: r.title || '', type: r.document_type || '', slug: slugify(r.title), product: p ? p[1] : 'all', desc: sp.desc, body: sp.body, file: r.file_url || '', thumb: r.thumbnail_url || '', date: r.published_date || '', phone: ph ? ph[1].trim() : '1-800-848-4500', ctaLabel: cl ? cl[1].trim() : '' };
   }
   // the text typed in the page (plain text) -> paragraphs; a short first line of a block = sub-heading; lines starting with "• " / "- " = a list (numbered cards); [image: url | caption] = a picture
   function fmtArticle(t, cards) {
@@ -364,20 +367,55 @@
       var list = res[0].filter(live).map(articleOf), slug = routeSlug(kind), r = list.filter(function (x) { return x.type === type && x.slug === slug; })[0];
       host.removeAttribute('style');
       if (!r) { host.innerHTML = notFoundBar('resources.html', kind === 'blog' ? 'Blog post' : 'Webinar'); return; }
-      var RGE = window.RGE, m = { title: r.title, body: r.body, thumb: r.thumb }, dirty = false;
+      var RGE = window.RGE, m = { title: r.title, body: r.body, thumb: r.thumb, phone: r.phone, ctaLabel: r.ctaLabel, product: r.product || 'all', date: r.date || '' }, dirty = false;
       var ce = function (f) { return editing() ? ' contenteditable="true" spellcheck="false" data-af="' + f + '"' + (f === 'body' ? ' data-multi="1"' : '') : ''; };
-      var d = r.date ? new Date(r.date) : null, when = d && !isNaN(d) ? d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : '';
-      var pname = prodTitle(r.product), blog = kind === 'blog';
+      var blog = kind === 'blog';
       function draw() {
         document.title = m.title + ' | Resources | RockGuard® HD';
         var cover = m.thumb || 'images/IMG_0097_crop.webp', words = String(m.body || '').split(/\s+/).filter(Boolean).length, mins = Math.max(1, Math.round(words / 200));
+        var d = m.date ? new Date(m.date) : null, when = d && !isNaN(d.getTime()) ? d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : (m.date || '');
+        var curProd = m.product || r.product || 'all';
+        var pname = curProd === 'all' ? 'All Products' : (prodTitle(curProd) || curProd);
         var photo = function (label) { return editing() ? '<button type="button" class="dyn-photo rl-ctl" data-aa="photo" style="z-index:6">📷 ' + label + '</button>' : ''; };
         var hero = '<section class="wb-hero" data-sec-id="sec-article-hero"><img class="rg14" src="' + esc(imgSrc(cover)) + '" alt=""><div class="rg15"></div><div class="wb-in"><span class="wb-pill"><i></i>' + (blog ? 'Blog Post' : 'Webinar') + '</span><h1 class="wb-h1"' + ce('title') + '>' + esc(m.title) + '</h1><div class="wb-crumb"><a href="index.html">Home</a> / <a href="resources.html">Resources</a> / <span>' + esc(m.title) + '</span></div>' +
           (blog ? '<div class="bl-meta">' + (when ? esc(when) + ' · ' : '') + mins + ' min read</div>' : '') + (editing() ? '<div style="margin-top:16px;position:relative">' + photo('Cover photo') + '</div>' : '') + '</div></section>';
-        var rows = [['Product', pname], ['Posted', when], blog ? ['Reading time', mins + ' min'] : ['Questions?', '<a href="tel:+18008484500">1-800-848-4500</a>']].filter(function (x) { return x[1]; }).map(function (x) { return '<div><dt>' + x[0] + '</dt><dd>' + (x[0] === 'Questions?' ? x[1] : esc(x[1])) + '</dd></div>'; }).join('');
-        var cta = blog ? (r.product && r.product !== 'all' && prodByKey(r.product) ? '<a href="resources.html?prod=' + encodeURIComponent(r.product) + '" class="wb-cta">More about ' + esc(pname) + ' →</a>' : '<a href="resources.html" class="wb-cta">More resources →</a>')
-          : (r.file ? '<a href="' + esc(r.file) + '"' + (/^https?:/i.test(r.file) ? ' target="_blank" rel="noopener"' : '') + ' class="wb-cta">Watch / Register →</a>' : '<a href="contact.html" class="wb-cta">Contact us to register →</a>');
-        var side = '<aside class="wb-side"><div class="wb-card">' + (blog ? '' : '<div class="wb-img"><img src="' + esc(imgSrc(cover)) + '" alt="' + esc(m.title) + '"><span class="wb-play" aria-hidden="true"></span>' + photo('Change photo') + '</div>') + '<div class="wb-body"><span class="wb-badge">' + (blog ? 'Blog Post' : 'Webinar') + '</span><dl class="wb-dl">' + rows + '</dl>' + cta + '</div></div>' +
+        var prodCell = editing()
+          ? '<span contenteditable="true" spellcheck="false" data-af="productName" title="Click to edit product name" style="cursor:text">' + esc(pname) + '</span>' +
+            '<select data-af="productSelect" style="margin-left:6px;font-family:inherit;font-size:11px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;background:#fafafa;color:#2c2e35;cursor:pointer" title="Or select from product list">' +
+              '<option value="">Select...</option>' +
+              '<option value="all"' + (curProd === 'all' ? ' selected' : '') + '>All Products</option>' +
+              prods.map(function (p) { return '<option value="' + esc(p.slug) + '"' + (curProd === p.slug ? ' selected' : '') + '>' + esc(p.title) + '</option>'; }).join('') +
+            '</select>'
+          : esc(pname);
+        var postedCell = editing()
+          ? '<span contenteditable="true" spellcheck="false" data-af="date" title="Click to edit date (e.g. October 24, 2026)" style="cursor:text">' + esc(when || 'October 24, 2026') + '</span>'
+          : esc(when);
+        var phoneNum = m.phone || '1-800-848-4500';
+        var phoneCell = editing()
+          ? '<span contenteditable="true" spellcheck="false" data-af="phone" style="color:#de4228;cursor:text" title="Click to edit phone number">' + esc(phoneNum) + '</span>'
+          : '<a href="tel:+1' + phoneNum.replace(/\D/g, '') + '">' + esc(phoneNum) + '</a>';
+        var rows = [['Product', prodCell], ['Posted', postedCell], blog ? ['Reading time', mins + ' min'] : ['Questions?', phoneCell]].filter(function (x) { return x[1]; }).map(function (x) { return '<div><dt>' + x[0] + '</dt><dd>' + x[1] + '</dd></div>'; }).join('');
+        var defCtaLabel = blog
+          ? (curProd && curProd !== 'all' && prodByKey(curProd) ? 'More about ' + esc(pname) + ' →' : 'More resources →')
+          : (r.file ? 'Watch / Register →' : 'Contact us to register →');
+        var defCtaHref = blog
+          ? (curProd && curProd !== 'all' && prodByKey(curProd) ? 'resources.html?prod=' + encodeURIComponent(curProd) : 'resources.html')
+          : (r.file ? r.file : 'contact.html');
+        var ctaLabel = m.ctaLabel || defCtaLabel;
+        var ctaHref = r.file || defCtaHref;
+        var ctaExtra = !blog && r.file && /^https?:/i.test(r.file) ? ' target="_blank" rel="noopener"' : '';
+        var cta;
+        if (editing()) {
+          cta = '<div class="wb-cta" style="cursor:default" title="Click button text to edit">' +
+            '<span contenteditable="true" spellcheck="false" data-af="ctaLabel" style="outline:2px dashed rgba(255,255,255,.8);outline-offset:3px;display:inline-block;cursor:text;color:#fff!important" title="Click to edit button text">' + esc(ctaLabel) + '</span>' +
+            '</div>' +
+            '<div class="rl-ctl" style="margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px">' +
+            '<button type="button" class="dyn-photo" style="position:static;font-size:11px;padding:4px 10px;cursor:pointer" data-aa="ctafile">🔗 Set CTA link' + (r.file ? ' (File linked)' : ' (Contact page)') + '</button>' +
+            '</div>';
+        } else {
+          cta = '<a href="' + esc(ctaHref) + '"' + ctaExtra + ' class="wb-cta">' + esc(ctaLabel) + '</a>';
+        }
+        var side = '<aside class="wb-side"><div class="wb-card">' + (blog ? '' : '<div class="wb-img"><img src="' + esc(imgSrc(cover)) + '" alt="' + esc(m.title) + '">' + photo('Change photo') + '</div>') + '<div class="wb-body"><span class="wb-badge">' + (blog ? 'Blog Post' : 'Webinar') + '</span><dl class="wb-dl">' + rows + '</dl>' + cta + '</div></div>' +
           '<div class="bl-help"><b>Need specifications or installation support?</b><span>Talk to the RockGuard® team.</span><a href="contact.html">Contact us →</a></div></aside>';
         var ins = editing() ? '<div class="art-ins rl-ctl"><button type="button" class="dyn-add" data-aa="ins">＋ Insert image in the text</button><span>The picture is put where the cursor is in the text below (or at the end). It is a line like [image: /images/photo.webp | caption].</span></div>' : '';
         var text = '<div class="wb-main">' + ins + (blog ? '<figure class="bl-fig"><img src="' + esc(imgSrc(cover)) + '" alt="' + esc(m.title) + '">' + photo('Change photo') + '</figure>' : '') +
@@ -388,8 +426,12 @@
       var mark = function () { dirty = true; refreshBar(); };
       host.addEventListener('click', function (e) {
         var b = e.target.closest('[data-aa]'); if (!b || !editing()) return; e.preventDefault(); e.stopImmediatePropagation();
-        if (b.getAttribute('data-aa') === 'photo') RGE.pickFile('image/*').then(function (file) { if (!file) return; b.textContent = 'Uploading…'; return RGE.upload(file, 'resources').then(function (u) { m.thumb = u; mark(); draw(); }); }).catch(function (err) { window.RGDialog.alert(err.message, { title: 'Upload failed', danger: true }); draw(); });
-        else {
+        var aa = b.getAttribute('data-aa');
+        if (aa === 'photo') {
+          RGE.pickFile('image/*').then(function (file) { if (!file) return; b.textContent = 'Uploading…'; return RGE.upload(file, 'resources').then(function (u) { m.thumb = u; mark(); draw(); }); }).catch(function (err) { window.RGDialog.alert(err.message, { title: 'Upload failed', danger: true }); draw(); });
+        } else if (aa === 'ctafile') {
+          RGE.fileLink({ title: 'CTA button link', url: r.file, accept: '.pdf,application/pdf,video/*', folder: 'resources', hint: 'The URL the CTA button opens (leave blank for Contact page).' }).then(function (x) { if (!x) return; r.file = x.clear ? '' : x.url; mark(); draw(); });
+        } else {
           var box = host.querySelector('[data-af="body"]'); if (!box) return;
           RGE.pickFile('image/*').then(function (file) {
             if (!file) return; b.textContent = 'Uploading…';
@@ -403,12 +445,42 @@
       }, true);
       host.addEventListener('input', function (e) {
         if (!editing()) return; var t = e.target.closest && e.target.closest('[data-af]'); if (!t) return;
-        m[t.getAttribute('data-af')] = (t.hasAttribute('data-multi') ? t.innerText : t.textContent).split(String.fromCharCode(160)).join(' '); mark();
+        var af = t.getAttribute('data-af'); if (af === 'productSelect') return;
+        var val = (t.hasAttribute('data-multi') ? t.innerText : t.textContent).split(String.fromCharCode(160)).join(' ');
+        if (af === 'productName') {
+          var trimmed = val.trim().toLowerCase();
+          var match = prods.filter(function (x) { return x.title.toLowerCase() === trimmed || x.slug.toLowerCase() === trimmed; })[0];
+          if (match) m.product = match.slug;
+          else if (trimmed === 'all products' || trimmed === 'all') m.product = 'all';
+          else m.product = val.trim();
+        } else if (af === 'date') {
+          m.date = val.trim();
+        } else {
+          m[af] = val;
+        }
+        mark();
+      });
+      host.addEventListener('change', function (e) {
+        if (!editing()) return; var sel = e.target.closest && e.target.closest('[data-af="productSelect"]'); if (!sel) return;
+        if (sel.value) {
+          m.product = sel.value;
+          var name = sel.value === 'all' ? 'All Products' : (prodTitle(sel.value) || sel.value);
+          var pspan = host.querySelector('[data-af="productName"]');
+          if (pspan) pspan.textContent = name;
+          mark();
+        }
       });
       host.addEventListener('keydown', function (e) { if (editing() && e.key === 'Enter' && e.target.closest && e.target.closest('[data-af]:not([data-multi])')) e.preventDefault(); });
       host.addEventListener('paste', function (e) { var t = e.target.closest && e.target.closest('[data-af]'); if (!editing() || !t) return; e.preventDefault(); var txt = (e.clipboardData || window.clipboardData).getData('text/plain'); document.execCommand('insertText', false, t.hasAttribute('data-multi') ? txt : txt.replace(/\s*\n\s*/g, ' ')); });
       function save() {
-        var body = { title: m.title, description: '[product:' + r.product + '] ' + r.desc + (m.body.trim() ? '\n\n[page]\n\n' + m.body.trim() : ''), thumbnail_url: m.thumb };
+        var prodKey = m.product || r.product || 'all';
+        var meta = '[product:' + prodKey + ']';
+        if (m.phone && m.phone.trim() !== '1-800-848-4500') meta += ' [phone:' + m.phone.trim() + ']';
+        if (m.ctaLabel && m.ctaLabel.trim()) meta += ' [ctalabel:' + m.ctaLabel.trim() + ']';
+        var cleanDesc = String(r.desc || '').replace(PHONE_RE, '').replace(CTALBL_RE, '').trim();
+        var desc = meta + (cleanDesc ? ' ' + cleanDesc : '');
+        var body = { title: m.title, description: desc + (m.body.trim() ? '\n\n[page]\n\n' + m.body.trim() : ''), thumbnail_url: m.thumb, file_url: r.file || '' };
+        if (m.date) { var parsed = new Date(m.date); body.published_date = !isNaN(parsed.getTime()) ? parsed.toISOString() : m.date; }
         return RGE.api('PATCH', 'resources/' + r.id, body).then(function () { var l = {}; l[m.title] = 'Updated'; return RGE.pending ? null : RGE.history('resources', l); }).then(function () { dirty = false; refreshBar(); return 1; });
       }
       if (window.RGCMS && window.RGCMS.registerHook) window.RGCMS.registerHook('article', { count: function () { return dirty ? 1 : 0; }, run: save });

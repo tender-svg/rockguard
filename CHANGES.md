@@ -14,7 +14,7 @@
 
 ## Step 4: live editor
 - `tools/cms-tag.js` + `tools/cms-keys.json`: every editable text / image / link gets a stable key from what it IS (kind + default text / file), never from its position. Rebuilds keep the keys (commit the registry). Parts drawn from the CMS lists (products, resources, project highlights) are not keyed.
-- `js/cms.js` (+ `css/cms.css`, `js/rg-toolbar.js`): admin bar, edit / preview, inline text + image edit, link editor, SAVE via `/api/v2/page-elements`, text format toolbar.
+- `js/cms.js` (+ `css/cms.css`, `js/rg-toolbar.js`): admin bar, edit / preview, inline text + image edit, link editor, SAVE via `/api/v2/page-elements`, text format toolbar (works on all editable texts across the whole site: data-cms, repeatable lists data-rs, product fields data-sf, project highlights data-pf, articles data-af, and custom sections).
 
 ## Step 5: public pages read the CMS (`js/rg-content.js`)
 - Home product cards, Products page (tabs + Accessories), Resources page (product tiles + 6 filters), Project Highlights (list / grid + search) and each project (`/project-highlight-<slug>.html`, rewritten to `project-highlight.html`) are drawn from `/api/v2/solutions`, `/resources`, `/stories`. If the API cannot be reached the shipped content stays.
