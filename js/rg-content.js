@@ -273,13 +273,16 @@
         var n = m.images.length; gi = Math.min(gi, Math.max(0, n - 1)); document.title = r.title + ' | Project Highlights | RockGuard® HD';
         var vis = Math.min(3, n); ts = Math.max(0, Math.min(ts, n - vis));
         var thumbs = m.images.slice(ts, ts + vis).map(function (s, k) { var j = ts + k, on = j === gi; return '<button class="rg170 rg-hover15" data-gi="' + j + '" style="outline:3px solid ' + (on ? '#de4228' : 'transparent') + ';opacity:' + (on ? 1 : 0.7) + '"><img class="rg14" src="' + esc(imgSrc(s)) + '" alt=""></button>'; }).join('');
+        var allThumbs = m.images.map(function (s, j) { var on = j === gi; return '<button type="button" class="rg-m-thumb' + (on ? ' is-active' : '') + '" data-gi="' + j + '" aria-label="Photo ' + (j + 1) + '"><img src="' + esc(imgSrc(s)) + '" alt=""></button>'; }).join('');
         var words = (m.product + ' – ' + r.title).split(' '), head = words.slice(0, -1).join(' '), last = words[words.length - 1];
         var tabs = [['challenge', "Client's Challenge"], ['solution', 'RockGuard® Solution']].map(function (t) { var on = t[0] === tab; return '<button class="rg188 rg-hover16" data-ct="' + t[0] + '" style="background:' + (on ? '#de4228' : 'transparent') + ';color:' + (on ? '#fff' : '#2c2e35') + '">' + t[1] + '</button>'; }).join('');
         var ben = m.benefits.map(function (b, i) { return '<div class="rg180"><span class="rg181">✓</span><span' + (editing() ? ' contenteditable="true" spellcheck="false" data-pb="' + i + '"' : '') + '>' + esc(b) + '</span>' + (editing() ? '<button type="button" class="app-x rl-ctl" data-pa="rmben" data-i="' + i + '" style="position:static;margin-left:8px">×</button>' : '') + '</div>'; }).join('');
         host.innerHTML =
           '<section class="rg165" data-sec-id="sec-project-gallery"><div class="rg166"><div class="rg167"><button class="rg168 rg-hover9" data-up aria-label="Previous photos">▲</button><div class="rg169">' + thumbs + '</div><button class="rg168 rg-hover9" data-down aria-label="More photos">▼</button></div>' +
           '<div class="rg171">' + img(m.images[gi], r.title) + '<button class="rg172 rg-hover6" data-gi="prev" aria-label="Previous photo">‹</button><button class="rg173 rg-hover6" data-gi="next" aria-label="Next photo">›</button>' +
-          (editing() ? '<div class="rl-ctl" style="position:absolute;left:12px;bottom:12px;z-index:6;display:flex;gap:8px"><button type="button" class="dyn-photo" style="position:static" data-pa="photo">📷 Change this photo</button><button type="button" class="dyn-photo" style="position:static" data-pa="addimg">＋ Add photo</button>' + (m.images.length ? '<button type="button" class="dyn-photo" style="position:static;background:#de4228" data-pa="rmimg" data-i="' + gi + '">🗑 Remove this photo</button>' : '') + '</div>' : '') + '</div></div>' +
+          (n > 1 ? '<span class="rg-photo-count">' + (gi + 1) + '/' + n + '</span>' : '') +
+          (editing() ? '<div class="rl-ctl" style="position:absolute;left:12px;bottom:12px;z-index:6;display:flex;gap:8px"><button type="button" class="dyn-photo" style="position:static" data-pa="photo">📷 Change this photo</button><button type="button" class="dyn-photo" style="position:static" data-pa="addimg">＋ Add photo</button>' + (m.images.length ? '<button type="button" class="dyn-photo" style="position:static;background:#de4228" data-pa="rmimg" data-i="' + gi + '">🗑 Remove this photo</button>' : '') + '</div>' : '') + '</div>' +
+          '<div class="rg-m-thumbs">' + allThumbs + '</div></div>' +
           '<div class="rg174"><div class="rg175"><span class="rg176"' + ce('product') + '>' + esc(m.product) + '</span><span class="rg158">Case Study · <span' + ce('location') + '>' + esc(m.location) + '</span></span></div><h1 class="rg177"' + ce('subtitle') + '>' + esc(m.subtitle) + '</h1>' +
           '<div class="rg178"><div><strong class="rg44">Owner:</strong> <span' + ce('owner') + '>' + esc(m.owner) + '</span></div><div><strong class="rg44">Products Used:</strong> ' + esc(m.product) + '</div></div>' +
           '<div class="rg179">' + ben + '</div>' + (editing() ? '<div class="rl-ctl"><button type="button" class="dyn-add" data-pa="addben">＋ Add benefit</button></div>' : '') +
@@ -306,6 +309,23 @@
         else if (e.target.closest('[data-up]')) { ts--; draw(); }
         else if (e.target.closest('[data-down]')) { ts++; draw(); }
       }, true);
+      var touchStartX = 0;
+      host.addEventListener('touchstart', function (e) {
+        var box = e.target.closest('.rg171');
+        if (box && e.changedTouches && e.changedTouches[0]) touchStartX = e.changedTouches[0].clientX;
+      }, { passive: true });
+      host.addEventListener('touchend', function (e) {
+        var box = e.target.closest('.rg171');
+        if (box && e.changedTouches && e.changedTouches[0]) {
+          var diff = e.changedTouches[0].clientX - touchStartX;
+          if (Math.abs(diff) > 40) {
+            var n = m.images.length || 1;
+            gi = diff < 0 ? (gi + 1) % n : (gi - 1 + n) % n;
+            if (gi < ts) ts = gi; if (gi >= ts + 3) ts = gi - 2;
+            draw();
+          }
+        }
+      }, { passive: true });
       host.addEventListener('input', function (e) {
         if (!editing()) return; var t = e.target.closest && e.target.closest('[data-pf],[data-pb]'); if (!t) return;
         var v = (t.hasAttribute('data-multi') ? t.innerText : t.textContent).split(String.fromCharCode(160)).join(' ');

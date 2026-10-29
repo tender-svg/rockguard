@@ -24,7 +24,7 @@
   function close() { var b = document.getElementById('rg-consent'); if (b) { b.classList.add('out'); setTimeout(function () { if (b.parentNode) b.parentNode.removeChild(b); }, 280); } }
 
   function main(on) {
-    return '<div class="rgc-body"><p>We use cookies to make our website work and to remember your preferences. We also use a third-party tracking tag from ZoomInfo to understand which businesses visit our website.</p>' +
+    return '<div class="rgc-body"><p>We use cookies to make our website work and to remember your preferences.</p>' +
       '<p>See our <a href="privacy-policy.html#cookies">Cookie Policy</a> and <a href="privacy-policy.html">Privacy Statement</a> for details, including your privacy rights.</p></div>' +
       '<div class="rgc-actions"><button type="button" class="rgc-btn rgc-accept" data-c="accept">Accept</button><button type="button" class="rgc-btn rgc-alt" data-c="deny">Deny</button><button type="button" class="rgc-btn rgc-alt" data-c="prefs">View preferences</button></div>' +
       '<a class="rgc-dns" href="privacy-policy.html#california" data-c="dns">Do Not Sell or Share My Personal Information</a>';
