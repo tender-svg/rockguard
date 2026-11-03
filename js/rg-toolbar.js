@@ -210,7 +210,7 @@
     function apply(ch, save) {
       if (!activeEl) return false;
       cleanFonts(activeEl);
-      var target = null;
+      var target = null, selOff = null;
       if (hasSel()) {
         var range = toRange(activeEl, saved.start, saved.end);
         if (range && !range.collapsed) {
@@ -229,6 +229,7 @@
             }
             if (span.parentNode) target = span;
           }
+          if (target) selOff = { start: saved.start, end: saved.end };
         }
       }
       if (!target) {
@@ -255,6 +256,14 @@
         [].slice.call(target.querySelectorAll('*')).forEach(function (s) { s.style.removeProperty('font-size'); });
       }
       cleanSpans(activeEl);
+      // keep the selection on the formatted text, so the next change (colour preview, size, font) still affects only that text
+      if (selOff) {
+        var rr = toRange(activeEl, selOff.start, selOff.end);
+        if (rr && !rr.collapsed) {
+          var sl = window.getSelection(); sl.removeAllRanges(); sl.addRange(rr);
+          saved = selOff;
+        }
+      }
       if (save !== false) changed();
       return true;
     }
