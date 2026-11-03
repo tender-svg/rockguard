@@ -137,8 +137,28 @@
     sel.value = '';
   });
 
+  /* ------------------------------------------------------------ product dropdowns of the forms = the solutions of the CMS (same titles as the CC rows of Dashboard > Email Configuration;
+   *   the backend compares them by name). The shipped options stay when the list cannot be loaded. */
+  function fillProductSelects() {
+    var sels = all('select[data-prodsel]'); if (!sels.length) return;
+    fetch('/api/v2/solutions', { credentials: 'include', cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (rows) {
+      var titles = (Array.isArray(rows) ? rows : []).filter(function (r) { return r.is_active !== false && r.is_deleted !== true && r.title; })
+        .sort(function (a, b) { return (a.display_order || 0) - (b.display_order || 0); }).map(function (r) { return String(r.title).trim(); })
+        .filter(function (t, i, a) { return t && a.indexOf(t) === i; });
+      if (!titles.length) return;
+      sels.forEach(function (sel) {
+        var keep = [].slice.call(sel.options).filter(function (o, i) { return i === 0 || o.hasAttribute('data-keep'); }), cur = sel.value;
+        sel.innerHTML = ''; keep.filter(function (o) { return !o.hasAttribute('data-keep'); }).forEach(function (o) { sel.appendChild(o); });
+        titles.forEach(function (t) { var o = document.createElement('option'); o.value = o.textContent = t; sel.appendChild(o); });
+        keep.filter(function (o) { return o.hasAttribute('data-keep'); }).forEach(function (o) { sel.appendChild(o); });
+        if (cur) sel.value = cur;
+      });
+    }).catch(function () { /* the shipped options stay */ });
+  }
+  fillProductSelects();
+
   /* ------------------------------------------------------------ forms */
-  var EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+  var EMAIL =/^[^@\s]+@[^@\s]+\.[^@\s]+$/;
   function markErr(el, bad) { el.style.borderColor = bad ? '#de4228' : ''; }
   document.addEventListener('input', function (e) { var el = e.target; if (el.style && el.style.borderColor && el.tagName !== 'BUTTON') markErr(el, false); });
   function checkFields(root) {

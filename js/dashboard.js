@@ -371,12 +371,16 @@
     var extra = []; ccAll.forEach(function (e) { if (e.form && !CC_FORMS.some(function (f) { return f[0] === e.form; }) && !extra.some(function (f) { return f[0] === e.form; })) extra.push([e.form, ccFormName(e.form)]); });
     return CC_FORMS.concat(extra);
   }
-  var CC_PRODUCTS = ['RockGuard® HD', 'PipeWeights', 'Accessories'];   // the product choices of the Lunch & Learn / Credit Application forms
+  var CC_PRODUCTS = ['RockGuard® HD', 'PipeWeights', 'Accessories'];   // fallback: replaced by the solutions of the CMS (the same titles the forms offer) once loaded
+  function ccProductList(e) { var l = CC_PRODUCTS.slice(); ((e && e.products) || []).forEach(function (p) { if (l.indexOf(p) < 0) l.push(p); }); return l; }   // + products already saved on the row, so none is lost
   var CC_REGIONS = [['none', 'Any region'], ['us_state', 'Specific US states'], ['country', 'Specific countries'], ['us_fallback', 'Every other US state'], ['intl_fallback', 'All other countries']];
   var emailCfg = null, ccAll = [], ccForm = 'support', EMAILRE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   function loadEmail() {
     $('#main').innerHTML = '<div class="db-head"><div><h1>Email Configuration</h1></div></div><div class="db-empty">Loading…</div>';
-    api('GET', '/api/v2/email-config').then(function (cfg) { setEmail(cfg); drawEmail(); }).catch(function (e) { $('#main').innerHTML = '<div class="db-empty">' + esc(e.message) + '</div>'; });
+    Promise.all([api('GET', '/api/v2/email-config'), api('GET', '/api/v2/solutions').catch(function () { return null; })]).then(function (r) {
+      var t = (Array.isArray(r[1]) ? r[1] : []).filter(function (x) { return x.is_active !== false && x.is_deleted !== true && x.title; }).sort(function (a, b) { return (a.display_order || 0) - (b.display_order || 0); }).map(function (x) { return String(x.title).trim(); }).filter(function (x, i, a) { return x && a.indexOf(x) === i; });
+      if (t.length) CC_PRODUCTS = t; setEmail(r[0]); drawEmail();
+    }).catch(function (e) { $('#main').innerHTML = '<div class="db-empty">' + esc(e.message) + '</div>'; });
   }
   function setEmail(cfg) {
     emailCfg = cfg || {}; var all = Array.isArray(emailCfg.cc_emails) ? emailCfg.cc_emails : [], out = [];
@@ -386,7 +390,7 @@
   function ccRow(e, i) {
     var needs = e.type === 'us_state' || e.type === 'country';
     return '<div class="db-cc" data-ci="' + i + '"><label class="db-field"><span>Name</span><input type="text" data-cc="name" value="' + esc(e.name) + '"></label><label class="db-field"><span>Email</span><input type="text" data-cc="email" value="' + esc(e.email) + '" placeholder="name@company.com"></label>' +
-      '<div class="db-field"><span>Products</span><div class="db-checks">' + CC_PRODUCTS.map(function (p) { return '<label><input type="checkbox" data-cc="prod" value="' + esc(p) + '"' + (e.products.indexOf(p) >= 0 ? ' checked' : '') + '> ' + esc(p) + '</label>'; }).join('') + '</div></div>' +
+      '<div class="db-field"><span>Products</span><div class="db-checks">' + ccProductList(e).map(function (p) { return '<label><input type="checkbox" data-cc="prod" value="' + esc(p) + '"' + (e.products.indexOf(p) >= 0 ? ' checked' : '') + '> ' + esc(p) + '</label>'; }).join('') + '</div></div>' +
       '<label class="db-field"><span>Region</span><select data-cc="type">' + CC_REGIONS.map(function (r) { return '<option value="' + r[0] + '"' + (e.type === r[0] ? ' selected' : '') + '>' + esc(r[1]) + '</option>'; }).join('') + '</select>' +
       (needs ? '<input type="text" data-cc="values" value="' + esc(e.values.join(', ')) + '" placeholder="' + (e.type === 'us_state' ? 'State codes, e.g. TX, OK' : 'Country codes, e.g. CA, GB') + '">' : '') + '</label>' +
       '<button type="button" class="db-btn db-btn-danger db-btn-sm" data-ccdel="' + i + '">Remove</button></div>';
