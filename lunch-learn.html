@@ -178,12 +178,18 @@
             
           </label>
         
-          <label class="rg223"><span class="rg-lt" data-cms="txt-country-17b0" data-cms-type="text">Country *</span> <input class="rg270 rg-focus19" name="country" type="text" required>
+          <label class="rg223"><span class="rg-lt" data-cms="txt-country-17b0" data-cms-type="text">Country *</span> <select class="rg270" name="country" required data-f="ctCountry">
+                <option value>Select Country</option>
+                <option value="United States">United States</option><option value="Canada">Canada</option><option value="Mexico">Mexico</option><option value="Other">Other</option>
+              </select>
             
             
           </label>
         
-          <label class="rg223"><span class="rg-lt" data-cms="txt-state-province-69f9" data-cms-type="text">State / Province</span> <input class="rg270 rg-focus19" name="state" type="text">
+          <label class="rg223"><span class="rg-lt" data-cms="txt-state-province-69f9" data-cms-type="text">State / Province</span> <select class="rg270" name="state" data-f="ctState">
+                <option value>Select State / Province</option>
+                <option value="Other">Other</option>
+              </select>
             
             
           </label>
@@ -203,7 +209,7 @@
             
           </label>
         
-          <label class="rg223"><span class="rg-lt" data-cms="txt-products-8602" data-cms-type="text">Products</span> <select class="rg270" name="products">
+          <label class="rg223"><span class="rg-lt" data-cms="txt-products-8602" data-cms-type="text">Products</span> <select class="rg270" name="products" required>
                 <option value>Select a product…</option>
                 <option value="RockGuard® HD">RockGuard® HD</option><option value="PipeWeights">PipeWeights</option><option value="Accessories">Accessories</option>
               </select>

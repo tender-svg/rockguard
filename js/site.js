@@ -128,8 +128,9 @@
 
   /* ------------------------------------------------------------ contact: state / province list follows the country */
   document.addEventListener('change', function (e) {
-    var el = e.target; if (!el.getAttribute || el.getAttribute('data-f') !== 'ctCountry' || !window.RG_GEO) return;
-    var sel = el.closest('form').querySelector('[data-f="ctState"]'); if (!sel) return;
+    var el = e.target, df = el.getAttribute && el.getAttribute('data-f'); if ((df !== 'ctCountry' && !(df === 'country' && el.tagName === 'SELECT')) || !window.RG_GEO) return;
+    var scope = el.closest('form') || el.closest('[data-vgroup="cstep"]') || document;
+    var sel = scope.querySelector(df === 'ctCountry' ? '[data-f="ctState"]' : 'select[data-f="state"]'); if (!sel) return;
     var list = window.RG_GEO[el.value] || ['Other'], first = sel.options[0];
     sel.innerHTML = ''; sel.appendChild(first);
     list.forEach(function (s) { var o = document.createElement('option'); o.value = o.textContent = s; sel.appendChild(o); });
@@ -240,7 +241,7 @@
     var hp = getHoneypot(form);
     if (kind === 'contact') {
       return { form_type: 'support', subject: v('subject') || 'Contact form', name: v('name'), email: v('email'), phone: v('phone'), company: v('company'),
-        project_country: cc, project_state: st, project_city: v('city'), company_address: v('address'), message: v('message'),
+        project_country: cc, project_state: st, project_city: v('city'), company_address: v('address'), product: v('product'), message: v('message'),
         captcha_token: turnstileToken, website_hp: hp };
     }
     return { form_type: 'lunch_learn', subject: 'Lunch & Learn request', name: join(v('first'), v('last')), email: v('email'), phone: v('phone'), company: v('company'), product: v('products'),
