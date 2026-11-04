@@ -244,7 +244,8 @@
       }
       if (ch.color !== undefined) {
         target.style.setProperty('color', ch.color, 'important');
-        [].slice.call(target.querySelectorAll('*')).forEach(function (s) { s.style.removeProperty('color'); });
+        // child elements (e.g. the dark <strong> / <b> of a paragraph) carry their own colour from the CSS and would ignore the parent's: give them the same one
+        [].slice.call(target.querySelectorAll('*')).forEach(function (s) { if (!/^(IMG|BR)$/.test(s.tagName)) s.style.setProperty('color', ch.color, 'important'); });
       }
       if (ch.fontFamily !== undefined) {
         if (ch.fontFamily) target.style.setProperty('font-family', "'" + ch.fontFamily + "', sans-serif", 'important');
