@@ -11,6 +11,48 @@
   'use strict';
   var page = document.body.getAttribute('data-page');
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  /* ----- rich text of the editable texts of products / projects: the plain value stays what the DB, the dashboard and the forms use; what the live editor adds (colour, font, size, bold ...)
+   *       is kept beside it (page element prod-rich of a product, "rich" in result_text of a project) and drawn again while it still matches the plain text */
+  var NB = String.fromCharCode(160), RT_OK = /^(B|I|U|STRONG|EM|SUP|SUB|BR|SPAN)$/, RT_CSS = /^(color|font-family|font-size|font-weight|font-style|text-decoration)$/;
+  var rtNorm = function (s) { return String(s == null ? '' : s).split(NB).join(' ').replace(/\s+/g, ''); };
+  var rtHas = function (h) { return /<(span|b|i|u|strong|em|sup|sub)\b/i.test(h || ''); };
+  function rtClean(html) {
+    var box = document.createElement('div'); box.innerHTML = html;
+    (function walk(n) {
+      [].slice.call(n.childNodes).forEach(function (c) {
+        if (c.nodeType === 3) return;
+        if (c.nodeType !== 1) { c.remove(); return; }
+        walk(c);
+        if (!RT_OK.test(c.tagName)) { while (c.firstChild) n.insertBefore(c.firstChild, c); c.remove(); return; }
+        [].slice.call(c.attributes).forEach(function (a) { if (a.name !== 'style') c.removeAttribute(a.name); });
+        if (c.hasAttribute('style')) {
+          var keep = [];
+          for (var i = 0; i < c.style.length; i++) { var pn = c.style[i]; if (RT_CSS.test(pn)) keep.push(pn + ':' + c.style.getPropertyValue(pn) + (c.style.getPropertyPriority(pn) ? ' !important' : '')); }
+          if (keep.length) c.setAttribute('style', keep.join(';')); else c.removeAttribute('style');
+        }
+        if (c.tagName === 'SPAN' && !c.attributes.length) { while (c.firstChild) n.insertBefore(c.firstChild, c); c.remove(); }
+      });
+    })(box);
+    return box.innerHTML;
+  }
+  function rtRead(el, multi) {   // { plain, rich } of an edited element; rich is '' when there is no formatting
+    var h = el.innerHTML; if (multi) h = h.replace(/<div[^>]*>/gi, '<br>').replace(/<\/div>/gi, '').replace(/^(<br\s*\/?>)+/i, '');
+    h = rtClean(h);
+    return { plain: (multi ? el.innerText : el.textContent).split(NB).join(' '), rich: rtHas(h) ? h : '' };
+  }
+  function rtShow(plain, rich) {
+    if (rich) { var t = document.createElement('div'); t.innerHTML = rich; if (rtNorm(t.textContent) === rtNorm(plain)) return rich; }
+    return esc(plain);
+  }
+  var R = function (m, f) { return rtShow(m[f], m.rich && m.rich[f]); };   // a text field of a product model / project model
+  var RF = function (m, i, j) { return rtShow(m.features[i][j], m.rich && m.rich.f && m.rich.f[i] && m.rich.f[i][j]); };   // a feature text
+  var RB = function (m, i) { return rtShow(m.benefits[i], m.rich && m.rich.b && m.rich.b[i]); };   // a benefit of a project
+  function setRich(m, f, rich, i, j) {
+    var r = m.rich || (m.rich = {});
+    if (f === 'f') { var a = r.f || (r.f = []); a[i] = a[i] || ['', '']; a[i][j] = rich; }
+    else if (f === 'b') { var b = r.b || (r.b = []); b[i] = rich; }
+    else if (rich) r[f] = rich; else delete r[f];
+  }
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return [].slice.call((r || document).querySelectorAll(s)); };
   var RGC = window.RGC || { usable: function () { return false; }, list: function () { return null; }, setList: function () { } };   // data cache (js/rg-cache.js)
@@ -54,7 +96,7 @@
             id: r.id, slug: r.slug, title: r.title || r.slug, tag: r.category || '', summary: String(r.short_description || '').replace(/\s*\[Images:\d+\]/g, '').trim(), card: r.icon_image_url || '',
             family: r.product_family || '', order: r.display_order || 0, link: r.custom_link || '',
             lead: e['prod-lead'] || '', image: e['prod-image'] || r.icon_image_url || '', tile: e['prod-tile'] || r.icon_image_url || '',
-            features: json(e['prod-features'], []), downloads: json(e['prod-downloads'], []), accDesc: e['prod-acc-desc'] || ''
+            features: json(e['prod-features'], []), downloads: json(e['prod-downloads'], []), accDesc: e['prod-acc-desc'] || '', rich: json(e['prod-rich'], {})
           };
         });
       })).then(function (all) { prods = all; prods.forEach(function (p) { p.key = tabKey(p); }); return prods; });
@@ -72,7 +114,7 @@
   function pm(p) {
     var m = pmodels[p.slug];
     if (!m) m = pmodels[p.slug] = { id: p.id, slug: p.slug, title: p.title, tag: p.tag, summary: p.summary, card: p.card, lead: p.lead, image: p.image, accDesc: p.accDesc,
-      features: p.features.map(function (f) { return [f[0] || '', f[1] || '']; }), downloads: p.downloads.map(function (d) { return [d[0] || '', d[1] || '', d[2] || '', d[3] || '']; }), dirty: {} };
+      features: p.features.map(function (f) { return [f[0] || '', f[1] || '']; }), downloads: p.downloads.map(function (d) { return [d[0] || '', d[1] || '', d[2] || '', d[3] || '']; }), rich: JSON.parse(JSON.stringify(p.rich && typeof p.rich === 'object' ? p.rich : {})), dirty: {} };
     return m;
   }
   var editing = function () { return !!(window.RGCMS && window.RGCMS.editing); };
@@ -82,16 +124,23 @@
   var pmark = function (m, k) { m.dirty[k] = 1; refreshBar(); };
   var pcount = function () { return Object.keys(pmodels).reduce(function (n, s) { return n + Object.keys(pmodels[s].dirty).length; }, 0); };
   var redrawFns = [];   // every drawn part that shows products; called after an edit that changes the structure (add / remove / photo)
+  function richOut(m) {   // the formatting of the texts; features in the same order as the saved (non-empty) features
+    var r = m.rich || {}, o = {}, idx = [];
+    ['title', 'tag', 'summary', 'lead', 'accDesc'].forEach(function (k) { if (r[k]) o[k] = r[k]; });
+    m.features.forEach(function (f, i) { if (f[0].trim() || f[1].trim()) idx.push(i); });
+    var fr = idx.map(function (i) { return (r.f && r.f[i]) || ['', '']; }); if (fr.some(function (x) { return x && (x[0] || x[1]); })) o.f = fr;
+    return JSON.stringify(o);
+  }
   function saveProducts() {
     var RGE = window.RGE, pr = Promise.resolve(), n = 0, log = {};
     Object.keys(pmodels).forEach(function (s) {
       var m = pmodels[s], d = m.dirty, keys = Object.keys(d); if (!keys.length) return;
       var page = 'product-detail-' + m.slug;
       var el = { lead: ['prod-lead', 'text', m.lead], image: ['prod-image', 'image', m.image], accDesc: ['prod-acc-desc', 'text', m.accDesc],
-        features: ['prod-features', 'text', JSON.stringify(m.features.filter(function (f) { return f[0].trim() || f[1].trim(); }))], downloads: ['prod-downloads', 'text', JSON.stringify(m.downloads.filter(function (x) { return x[0].trim() || x[1].trim(); }))] };
+        features: ['prod-features', 'text', JSON.stringify(m.features.filter(function (f) { return f[0].trim() || f[1].trim(); }))], downloads: ['prod-downloads', 'text', JSON.stringify(m.downloads.filter(function (x) { return x[0].trim() || x[1].trim(); }))], rich: ['prod-rich', 'text', richOut(m)] };
       if (d.row || d.card) { var body = {}; if (d.row) { body.title = m.title; body.category = m.tag; body.short_description = m.summary; } if (d.card) body.icon_image_url = m.card; pr = pr.then(function () { return RGE.api('PATCH', 'solutions/' + m.id, body); }).then(function () { n++; }); }
       Object.keys(el).forEach(function (k) { if (!d[k]) return; pr = pr.then(function () { return RGE.api('POST', 'page-elements', { page_slug: page, element_id: el[k][0], content_type: el[k][1], content_value: el[k][2] }); }).then(function () { n++; }); });
-      keys.forEach(function (k) { log[m.title + ' · ' + (k === 'row' ? 'title / tag / summary' : k)] = 'Updated'; });
+      keys.forEach(function (k) { if (k === 'rich') return; log[m.title + ' · ' + (k === 'row' ? 'title / tag / summary' : k)] = 'Updated'; });
       pr = pr.then(function () { m.dirty = {}; });
     });
     return pr.then(function () { return RGE.pending ? null : RGE.history('solutions', log); }).then(function () { refreshBar(); return n; });
@@ -103,7 +152,8 @@
     var RGE = window.RGE, modelOf = function (el) { return pmodels[el.getAttribute('data-slug')]; };
     host.addEventListener('input', function (e) {
       if (!editing()) return; var t = e.target.closest && e.target.closest('[data-sf]'); if (!t) return; var m = modelOf(t); if (!m) return;
-      var f = t.getAttribute('data-sf'), v = t.textContent.split(String.fromCharCode(160)).join(' '), i = parseInt(t.getAttribute('data-i'), 10), j = parseInt(t.getAttribute('data-j'), 10);
+      var f = t.getAttribute('data-sf'), rd = rtRead(t, false), v = rd.plain, i = parseInt(t.getAttribute('data-i'), 10), j = parseInt(t.getAttribute('data-j'), 10);
+      if (f !== 'd') { setRich(m, f, rd.rich, i, j); pmark(m, 'rich'); }
       if (f === 'f') { m.features[i][j] = v; pmark(m, 'features'); } else if (f === 'd') { m.downloads[i][j] = v; pmark(m, 'downloads'); }
       else { m[f] = v; pmark(m, f === 'title' || f === 'tag' || f === 'summary' ? 'row' : f); }
     });
@@ -114,7 +164,7 @@
       var m = modelOf(b), a = b.getAttribute('data-sa'), i = parseInt(b.getAttribute('data-i'), 10), field = b.getAttribute('data-field') || 'image'; if (!m) return;
       var redraw = function () { redrawFns.forEach(function (fn) { fn(); }); };
       if (a === 'addf') { m.features.push(['', '']); pmark(m, 'features'); redraw(); var f = $('[data-sf="f"][data-slug="' + m.slug + '"][data-i="' + (m.features.length - 1) + '"][data-j="0"]'); if (f) f.focus(); }
-      else if (a === 'rmf') { m.features.splice(i, 1); pmark(m, 'features'); redraw(); }
+      else if (a === 'rmf') { m.features.splice(i, 1); if (m.rich && m.rich.f) m.rich.f.splice(i, 1); pmark(m, 'features'); pmark(m, 'rich'); redraw(); }
       else if (a === 'addd') { m.downloads.push(['New download', '', 'Data Sheet', '']); pmark(m, 'downloads'); redraw(); }
       else if (a === 'rmd') { m.downloads.splice(i, 1); pmark(m, 'downloads'); redraw(); }
       else if (a === 'dlink') RGE.fileLink({ title: 'Download link', url: m.downloads[i][1], accept: '.pdf,.docx,application/pdf', folder: 'resources', hint: 'The file this download opens: paste a link or upload a PDF / Word file.' }).then(function (r) { if (!r) return; m.downloads[i][1] = r.clear ? '' : r.url; m.downloads[i][3] = ''; pmark(m, 'downloads'); redraw(); });
@@ -131,7 +181,7 @@
         box.innerHTML = list.map(function (p) {
           var m = pm(p);
           return '<article class="rg53 rg-hover5" data-href="' + esc(p.link || 'products.html?prod=' + p.key) + '"><div class="rg54" style="aspect-ratio:16/9">' + img(m.card, m.title) + pbtn(m, 'dyn-photo', 'photo', '📷 Change photo', ' data-field="card"') + '<span class="rg55"' + pe(m, 'data-sf="tag"') + '>' + esc(m.tag) + '</span></div>' +
-            '<div class="rg56"><h3 class="rg57"' + pe(m, 'data-sf="title"') + '>' + esc(m.title) + '</h3><p class="rg58"' + pe(m, 'data-sf="summary"') + '>' + esc(m.summary) + '</p><div class="rg59">Learn More →</div></div></article>';
+            '<div class="rg56"><h3 class="rg57"' + pe(m, 'data-sf="title"') + '>' + R(m, 'title') + '</h3><p class="rg58"' + pe(m, 'data-sf="summary"') + '>' + R(m, 'summary') + '</p><div class="rg59">Learn More →</div></div></article>';
         }).join('');
         afterDraw();
       }
@@ -156,24 +206,24 @@
           var items = accProds().map(pm); name = 'Accessories'; tag = 'Installation & Jobsite';
           items.forEach(function (x) { x.features.forEach(function (f, k) { feats.push([x, k]); }); });
           left = '<div class="rg89">' + items.map(function (x, i) { return '<div class="rg90" style="position:relative"><img class="rg91" src="' + esc(imgSrc(x.image)) + '" alt="' + esc(x.title) + '" loading="lazy" style="object-fit:' + (i === 0 ? 'contain' : 'cover') + ';padding:' + (i === 0 ? '18px' : '0') + '">' + pbtn(x, 'dyn-photo', 'photo', '📷 Change photo') + '</div>'; }).join('') + '</div>';
-          right = '<div class="rg95">' + items.map(function (x) { return '<div class="rg96"><p class="rg97"><strong class="rg44"' + pe(x, 'data-sf="title"') + '>' + esc(x.title) + '</strong> <span' + pe(x, 'data-sf="accDesc"') + '>' + esc(x.accDesc || x.lead) + '</span></p></div>'; }).join('') + '</div>';
+          right = '<div class="rg95">' + items.map(function (x) { return '<div class="rg96"><p class="rg97"><strong class="rg44"' + pe(x, 'data-sf="title"') + '>' + R(x, 'title') + '</strong> <span' + pe(x, 'data-sf="accDesc"') + '>' + (x.accDesc ? R(x, 'accDesc') : esc(x.lead)) + '</span></p></div>'; }).join('') + '</div>';
         } else {
           name = m.title; tag = m.tag; m.features.forEach(function (f, k) { feats.push([m, k]); });
           left = '<div class="rg88" style="position:relative">' + img(m.image, m.title) + pbtn(m, 'dyn-photo', 'photo', '📷 Change photo') + '</div>';
-          right = (m.lead || m.summary || editing() ? '<p class="rg94"' + (p ? pe(m, 'data-sf="lead"') : '') + '>' + esc(m.lead || (editing() ? '' : m.summary)) + '</p>' : '') + (editing() && !m.lead ? '<p class="rg94" style="opacity:.6">(Empty: the summary is shown instead. Click above to write the lead text.)</p>' : '');
+          right = (m.lead || m.summary || editing() ? '<p class="rg94"' + (p ? pe(m, 'data-sf="lead"') : '') + '>' + (m.lead ? R(m, 'lead') : esc(editing() ? '' : m.summary)) + '</p>' : '') + (editing() && !m.lead ? '<p class="rg94" style="opacity:.6">(Empty: the summary is shown instead. Click above to write the lead text.)</p>' : '');
         }
         var ds = !acc && m.downloads[0] ? m.downloads[0][1] : '';
         var featHtml = feats.map(function (fx, i) {
           var o = fx[0], k = fx[1], f = o.features[k];
-          return '<div class="rg107 rg-hover10"><div class="rg108"><span class="rg109">' + pad2(i + 1) + '</span><span class="rg110"></span></div><h4 class="rg111"' + pe(o, 'data-sf="f" data-i="' + k + '" data-j="0"') + '>' + esc(f[0]) + '</h4>' +
-            (f[1] || editing() ? '<p class="rg112"' + pe(o, 'data-sf="f" data-i="' + k + '" data-j="1"') + '>' + esc(f[1]) + '</p>' : '') + (editing() ? '<button type="button" class="app-x rl-ctl" data-sa="rmf" data-slug="' + esc(o.slug) + '" data-i="' + k + '" title="Remove this feature" style="position:static;margin-top:10px">×</button>' : '') + '</div>';
+          return '<div class="rg107 rg-hover10"><div class="rg108"><span class="rg109">' + pad2(i + 1) + '</span><span class="rg110"></span></div><h4 class="rg111"' + pe(o, 'data-sf="f" data-i="' + k + '" data-j="0"') + '>' + RF(o, k, 0) + '</h4>' +
+            (f[1] || editing() ? '<p class="rg112"' + pe(o, 'data-sf="f" data-i="' + k + '" data-j="1"') + '>' + RF(o, k, 1) + '</p>' : '') + (editing() ? '<button type="button" class="app-x rl-ctl" data-sa="rmf" data-slug="' + esc(o.slug) + '" data-i="' + k + '" title="Remove this feature" style="position:static;margin-top:10px">×</button>' : '') + '</div>';
         }).join('');
         var addF = !editing() ? '' : (acc ? accProds().map(pm).map(function (x) { return pbtn(x, 'dyn-add', 'addf', '＋ Add feature to ' + esc(x.title), ' style="margin:0 10px 10px 0"'); }).join('') : pbtn(m, 'dyn-add', 'addf', '＋ Add feature'));
         host.innerHTML =
           '<section class="rg80 rg-hero" data-sec-id="sec-products-hero">' + heroBg('img-hero-products') + '<div class="rg81" style="padding-bottom:64px"><div class="rg82"><span class="rg18"></span>' + T('products-eyebrow', 'RockGuard® HD | Products') + '</div>' + T('products-title', 'Pipeline Protection <span class="rg41">Products</span>', 'h1', 'rg83') + '</div></section>' +
           '<div class="rg-tabstrip"><div class="rg-tabstrip-in"><div class="rg84" style="padding-top:0">' + tabBtns + '</div></div></div>' +
-          '<section class="rg86" data-sec-id="sec-products-detail"><div class="rg87">' + left + '<div><div class="rg92"' + (p ? pe(m, 'data-sf="tag"') : '') + '>' + esc(tag) + '</div><h2 class="rg93"' + (p ? pe(m, 'data-sf="title"') : '') + '>' + esc(name) + '</h2>' + right +
-          '<div class="rg98"><button class="rg99 rg-hover9" data-href="contact.html" data-cms="products-quote-btn" data-cms-type="text" data-cms-link="lnk-products-quote">Get a Quote</button>' + (ds ? '<a class="rg100 rg-hover7" href="' + esc(ds) + '" target="_blank" rel="noopener">Data Sheet ↓</a>' : '') + '</div>' +
+          '<section class="rg86" data-sec-id="sec-products-detail"><div class="rg87">' + left + '<div><div class="rg92"' + (p ? pe(m, 'data-sf="tag"') : '') + '>' + (p ? R(m, 'tag') : esc(tag)) + '</div><h2 class="rg93"' + (p ? pe(m, 'data-sf="title"') : '') + '>' + (p ? R(m, 'title') : esc(name)) + '</h2>' + right +
+          '<div class="rg98"><button class="rg99 rg-hover9" data-href="contact.html" data-cms="products-quote-btn" data-cms-type="text" data-cms-link="lnk-products-quote">Get a Quote</button>' + (!acc && p ? '<a class="rg100 rg-hover7" href="resources.html?prod=' + encodeURIComponent(p.key) + '">Resources →</a>' : '') + '</div>' +
           (editing() && !acc ? '<p class="rg206" style="margin-top:14px">The summary (home card) and the downloads of this product are edited on its own page: <a href="product-detail-' + esc(m.slug) + '.html">product-detail-' + esc(m.slug) + '.html</a>.</p>' : '') + '</div></div></section>' +
           '<section class="rg80" data-sec-id="sec-products-features"><div class="rg101"><div class="rg102"><div><div class="rg103"><span class="rg18"></span>' + esc(name) + '</div>' + T('products-features-title', 'Features &amp; <span class="rg41">Benefits</span>', 'h3', 'rg104') + '</div><div class="rg105">' + pad2(feats.length) + ' ' + T('products-advantages', 'Key Advantages') + '</div></div><div class="rg106">' + featHtml + '</div>' + (editing() ? '<div class="rl-ctl" style="margin-top:20px">' + addF + '</div>' : '') + '</div></section>';
         afterDraw();
@@ -227,7 +277,7 @@
   function storyOf(r) {
     var x = storyX(r), imgs = (x.images && x.images.length ? x.images : (r.hero_image_url ? [r.hero_image_url] : [])).slice();
     return { raw: r, id: r.id, slug: r.slug, title: r.title || '', location: r.location || '', owner: r.application || '', product: r.products_used || '', prod: x.prod || '', subtitle: x.subtitle || r.title || '', years: x.years || '', contractor: x.contractor || '', supplier: x.supplier || '',
-      benefits: Array.isArray(x.benefits) ? x.benefits : [], tech: x.tech || [], excerpt: x.excerpt || String(r.challenge_text || '').slice(0, 320), challenge: r.challenge_text || '', solution: r.solution_text || '', file: x.file || '', images: imgs };
+      benefits: Array.isArray(x.benefits) ? x.benefits : [], tech: x.tech || [], excerpt: x.excerpt || String(r.challenge_text || '').slice(0, 320), challenge: r.challenge_text || '', solution: r.solution_text || '', file: x.file || '', images: imgs, rich: x.rich && typeof x.rich === 'object' ? x.rich : {} };
   }
   function highlights() {
     get('stories').then(function (rows) {
@@ -266,7 +316,7 @@
       var host = $('[data-vgroup="pj"]') || $('[data-dyn="pj"]'); if (!host) return;
       if (!r) { host.innerHTML = notFoundBar('project-highlights.html', 'Project'); return; }
       host.removeAttribute('hidden'); host.removeAttribute('style');
-      var RGE = window.RGE, m = { subtitle: r.subtitle, location: r.location, owner: r.owner, product: r.product, benefits: r.benefits.slice(), challenge: r.challenge, solution: r.solution, images: r.images.slice(), file: r.file };
+      var RGE = window.RGE, m = { subtitle: r.subtitle, location: r.location, owner: r.owner, product: r.product, benefits: r.benefits.slice(), challenge: r.challenge, solution: r.solution, images: r.images.slice(), file: r.file, rich: JSON.parse(JSON.stringify(r.rich || {})) };
       var gi = 0, ts = 0, tab = 'challenge', dirty = false;
       var ce = function (f, multi) { return editing() ? ' contenteditable="true" spellcheck="false" data-pf="' + f + '"' + (multi ? ' data-multi="1"' : '') : ''; };
       function draw() {
@@ -276,18 +326,18 @@
         var allThumbs = m.images.map(function (s, j) { var on = j === gi; return '<button type="button" class="rg-m-thumb' + (on ? ' is-active' : '') + '" data-gi="' + j + '" aria-label="Photo ' + (j + 1) + '"><img src="' + esc(imgSrc(s)) + '" alt=""></button>'; }).join('');
         var words = (m.product + ' – ' + r.title).split(' '), head = words.slice(0, -1).join(' '), last = words[words.length - 1];
         var tabs = [['challenge', "Client's Challenge"], ['solution', 'RockGuard® Solution']].map(function (t) { var on = t[0] === tab; return '<button class="rg188 rg-hover16" data-ct="' + t[0] + '" style="background:' + (on ? '#de4228' : 'transparent') + ';color:' + (on ? '#fff' : '#2c2e35') + '">' + t[1] + '</button>'; }).join('');
-        var ben = m.benefits.map(function (b, i) { return '<div class="rg180"><span class="rg181">✓</span><span' + (editing() ? ' contenteditable="true" spellcheck="false" data-pb="' + i + '"' : '') + '>' + esc(b) + '</span>' + (editing() ? '<button type="button" class="app-x rl-ctl" data-pa="rmben" data-i="' + i + '" style="position:static;margin-left:8px">×</button>' : '') + '</div>'; }).join('');
+        var ben = m.benefits.map(function (b, i) { return '<div class="rg180"><span class="rg181">✓</span><span' + (editing() ? ' contenteditable="true" spellcheck="false" data-pb="' + i + '"' : '') + '>' + RB(m, i) + '</span>' + (editing() ? '<button type="button" class="app-x rl-ctl" data-pa="rmben" data-i="' + i + '" style="position:static;margin-left:8px">×</button>' : '') + '</div>'; }).join('');
         host.innerHTML =
           '<section class="rg165" data-sec-id="sec-project-gallery"><div class="rg166"><div class="rg167"><button class="rg168 rg-hover9" data-up aria-label="Previous photos">▲</button><div class="rg169">' + thumbs + '</div><button class="rg168 rg-hover9" data-down aria-label="More photos">▼</button></div>' +
           '<div class="rg171">' + img(m.images[gi], r.title) + '<button class="rg172 rg-hover6" data-gi="prev" aria-label="Previous photo">‹</button><button class="rg173 rg-hover6" data-gi="next" aria-label="Next photo">›</button>' +
           (n > 1 ? '<span class="rg-photo-count">' + (gi + 1) + '/' + n + '</span>' : '') +
           (editing() ? '<div class="rl-ctl" style="position:absolute;left:12px;bottom:12px;z-index:6;display:flex;gap:8px"><button type="button" class="dyn-photo" style="position:static" data-pa="photo">📷 Change this photo</button><button type="button" class="dyn-photo" style="position:static" data-pa="addimg">＋ Add photo</button>' + (m.images.length ? '<button type="button" class="dyn-photo" style="position:static;background:#de4228" data-pa="rmimg" data-i="' + gi + '">🗑 Remove this photo</button>' : '') + '</div>' : '') + '</div>' +
           '<div class="rg-m-thumbs">' + allThumbs + '</div></div>' +
-          '<div class="rg174"><div class="rg175"><span class="rg176"' + ce('product') + '>' + esc(m.product) + '</span><span class="rg158">Case Study · <span' + ce('location') + '>' + esc(m.location) + '</span></span></div><h1 class="rg177"' + ce('subtitle') + '>' + esc(m.subtitle) + '</h1>' +
-          '<div class="rg178"><div><strong class="rg44">Owner:</strong> <span' + ce('owner') + '>' + esc(m.owner) + '</span></div><div><strong class="rg44">Products Used:</strong> ' + esc(m.product) + '</div></div>' +
+          '<div class="rg174"><div class="rg175"><span class="rg176"' + ce('product') + '>' + R(m, 'product') + '</span><span class="rg158">Case Study · <span' + ce('location') + '>' + R(m, 'location') + '</span></span></div><h1 class="rg177"' + ce('subtitle') + '>' + R(m, 'subtitle') + '</h1>' +
+          '<div class="rg178"><div><strong class="rg44">Owner:</strong> <span' + ce('owner') + '>' + R(m, 'owner') + '</span></div><div><strong class="rg44">Products Used:</strong> ' + esc(m.product) + '</div></div>' +
           '<div class="rg179">' + ben + '</div>' + (editing() ? '<div class="rl-ctl"><button type="button" class="dyn-add" data-pa="addben">＋ Add benefit</button></div>' : '') +
           (m.file || editing() ? '<a class="rg182 rg-hover9" href="' + esc(m.file || '#') + '" target="_blank" rel="noopener">Download Project Highlight</a>' : '') + (editing() ? '<div class="rl-ctl" style="margin-top:10px"><button type="button" class="dyn-add" data-pa="file">🔗 Set the PDF / link of this button</button></div>' : '') + '</div></section>' +
-          '<section class="rg183" data-sec-id="sec-project-case"><div class="rg184"><div class="rg185"><h2 class="rg186">' + esc(head) + ' <span class="rg41">' + esc(last) + '</span></h2><div class="rg187">' + tabs + '</div><p class="rg189" style="white-space:pre-line"' + ce(tab === 'challenge' ? 'challenge' : 'solution', true) + '>' + esc(tab === 'challenge' ? m.challenge : m.solution) + '</p></div></div></section>';
+          '<section class="rg183" data-sec-id="sec-project-case"><div class="rg184"><div class="rg185"><h2 class="rg186">' + esc(head) + ' <span class="rg41">' + esc(last) + '</span></h2><div class="rg187">' + tabs + '</div><p class="rg189" style="white-space:pre-line"' + ce(tab === 'challenge' ? 'challenge' : 'solution', true) + '>' + R(m, tab === 'challenge' ? 'challenge' : 'solution') + '</p></div></div></section>';
         afterDraw();
       }
       var bg = $('section.rg-hero > img.rg-herobg'); if (bg && m.images[0]) bg.setAttribute('src', imgSrc(m.images[0]));   // then a saved banner photo (CMS key) is applied over it by js/cms.js
@@ -297,7 +347,7 @@
         if (pa && editing()) {
           e.preventDefault(); e.stopImmediatePropagation(); var a = pa.getAttribute('data-pa'), i = parseInt(pa.getAttribute('data-i'), 10);
           if (a === 'rmimg') { m.images.splice(i, 1); mark(); draw(); }
-          else if (a === 'rmben') { m.benefits.splice(i, 1); mark(); draw(); }
+          else if (a === 'rmben') { m.benefits.splice(i, 1); if (m.rich && m.rich.b) m.rich.b.splice(i, 1); mark(); draw(); }
           else if (a === 'addben') { m.benefits.push('New benefit'); mark(); draw(); }
           else if (a === 'photo' || a === 'addimg') RGE.pickFile('image/*').then(function (file) { if (!file) return; pa.textContent = 'Uploading…'; return RGE.upload(file, 'projects').then(function (u) { if (a === 'addimg' || !m.images.length) { m.images.push(u); gi = m.images.length - 1; } else m.images[gi] = u; mark(); draw(); }); }).catch(function (err) { window.RGDialog.alert(err.message, { title: 'Upload failed', danger: true }); draw(); });
           else if (a === 'file') RGE.fileLink({ title: 'Project highlight PDF / link', url: m.file, accept: '.pdf,application/pdf', folder: 'projects', hint: 'What the "Download Project Highlight" button opens.' }).then(function (x) { if (!x) return; m.file = x.clear ? '' : x.url; mark(); draw(); });
@@ -328,15 +378,19 @@
       }, { passive: true });
       host.addEventListener('input', function (e) {
         if (!editing()) return; var t = e.target.closest && e.target.closest('[data-pf],[data-pb]'); if (!t) return;
-        var v = (t.hasAttribute('data-multi') ? t.innerText : t.textContent).split(String.fromCharCode(160)).join(' ');
-        if (t.hasAttribute('data-pb')) m.benefits[parseInt(t.getAttribute('data-pb'), 10)] = v; else m[t.getAttribute('data-pf')] = v;
+        var rd = rtRead(t, t.hasAttribute('data-multi')), v = rd.plain;
+        if (t.hasAttribute('data-pb')) { var bi = parseInt(t.getAttribute('data-pb'), 10); m.benefits[bi] = v; setRich(m, 'b', rd.rich, bi); } else { m[t.getAttribute('data-pf')] = v; setRich(m, t.getAttribute('data-pf'), rd.rich); }
         mark();
       });
       host.addEventListener('keydown', function (e) { if (editing() && e.key === 'Enter' && e.target.closest && e.target.closest('[data-pf]:not([data-multi]),[data-pb]')) e.preventDefault(); });
       host.addEventListener('paste', function (e) { var t = e.target.closest && e.target.closest('[data-pf],[data-pb]'); if (!editing() || !t) return; e.preventDefault(); var txt = (e.clipboardData || window.clipboardData).getData('text/plain'); document.execCommand('insertText', false, t.hasAttribute('data-multi') ? txt : txt.replace(/\s*\n\s*/g, ' ')); });
+      function projRich(m) {   // the formatting of the texts; benefits in the same order as the saved (non-empty) ones
+        var o = {}, q = m.rich || {}; ['product', 'location', 'subtitle', 'owner', 'challenge', 'solution'].forEach(function (k) { if (q[k]) o[k] = q[k]; });
+        var b = []; m.benefits.forEach(function (x, i) { if (String(x).trim()) b.push((q.b && q.b[i]) || ''); }); if (b.some(Boolean)) o.b = b; return o;
+      }
       function save() {
         var keep = storyX(r.raw), body = { location: m.location, application: m.owner, products_used: m.product, hero_image_url: m.images[0] || '', challenge_text: m.challenge, solution_text: m.solution, project_benefits: m.benefits.filter(Boolean).join(', '),
-          result_text: JSON.stringify(Object.assign({}, keep, { images: m.images.filter(Boolean), file: m.file || '', subtitle: m.subtitle, benefits: m.benefits.map(function (b) { return String(b).trim(); }).filter(Boolean) })) };
+          result_text: JSON.stringify(Object.assign({}, keep, { images: m.images.filter(Boolean), file: m.file || '', subtitle: m.subtitle, benefits: m.benefits.map(function (b) { return String(b).trim(); }).filter(Boolean), rich: projRich(m) })) };
         return RGE.api('PATCH', 'stories/' + r.id, body).then(function () { var l = {}; l[r.title] = 'Updated'; return RGE.pending ? null : RGE.history('stories', l); }).then(function () { dirty = false; refreshBar(); return 1; });
       }
       if (window.RGCMS && window.RGCMS.registerHook) window.RGCMS.registerHook('project', { count: function () { return dirty ? 1 : 0; }, run: save });
@@ -523,8 +577,8 @@
         document.title = m.title + ' | Products | RockGuard® HD';
         var lead = m.lead || m.summary, ds = m.downloads[0] ? m.downloads[0][1] : '';
         var feats = m.features.map(function (f, i) {
-          return '<div class="rg107 rg-hover10"><div class="rg108"><span class="rg109">' + pad2(i + 1) + '</span><span class="rg110"></span></div><h4 class="rg111"' + sf('data-sf="f" data-i="' + i + '" data-j="0"') + '>' + esc(f[0]) + '</h4>' +
-            (f[1] || editing() ? '<p class="rg112"' + sf('data-sf="f" data-i="' + i + '" data-j="1"') + '>' + esc(f[1]) + '</p>' : '') + (editing() ? '<button type="button" class="app-x rl-ctl" data-sa="rmf" data-slug="' + esc(m.slug) + '" data-i="' + i + '" title="Remove this feature" style="position:static;margin-top:10px">×</button>' : '') + '</div>';
+          return '<div class="rg107 rg-hover10"><div class="rg108"><span class="rg109">' + pad2(i + 1) + '</span><span class="rg110"></span></div><h4 class="rg111"' + sf('data-sf="f" data-i="' + i + '" data-j="0"') + '>' + RF(m, i, 0) + '</h4>' +
+            (f[1] || editing() ? '<p class="rg112"' + sf('data-sf="f" data-i="' + i + '" data-j="1"') + '>' + RF(m, i, 1) + '</p>' : '') + (editing() ? '<button type="button" class="app-x rl-ctl" data-sa="rmf" data-slug="' + esc(m.slug) + '" data-i="' + i + '" title="Remove this feature" style="position:static;margin-top:10px">×</button>' : '') + '</div>';
         }).join('');
         var dls = m.downloads.map(function (d, i) {
           var ext = d[3] || extOf(d[1]), tagOpen = editing() ? 'div' : 'a href="' + esc(d[1] || '#') + '" target="_blank" rel="noopener"', tagClose = editing() ? 'div' : 'a';
@@ -532,11 +586,11 @@
             (editing() ? '<div class="rl-ctl" style="display:flex;gap:8px;margin-top:10px"><button type="button" class="dyn-add" data-sa="dlink" data-slug="' + esc(m.slug) + '" data-i="' + i + '">Link / file</button><button type="button" class="app-x" data-sa="rmd" data-slug="' + esc(m.slug) + '" data-i="' + i + '" title="Remove this download" style="position:static">×</button></div>' : '') + '</' + tagClose + '>';
         }).join('');
         host.innerHTML =
-          '<section class="rg80 rg-hero" data-sec-id="sec-product-hero">' + heroBg('img-hero-solution', m.image) + '<div class="rg81"><div class="rg82"><span class="rg18"></span>' + T('solution-eyebrow', 'RockGuard® HD | Products') + '</div><h1 class="rg83"' + sf('data-sf="title"') + '>' + esc(m.title) + '</h1><div class="rg84"><button class="rg85 rg-hover8" data-href="products.html" style="background:rgba(255,255,255,.06);color:#d6c6b2">← All Products</button></div></div></section>' +
-          '<section class="rg86" data-sec-id="sec-product-detail"><div class="rg87"><div class="rg88" style="position:relative">' + img(m.image, m.title) + pbtn(m, 'dyn-photo', 'photo', '📷 Change photo') + '</div><div><div class="rg92"' + sf('data-sf="tag"') + '>' + esc(m.tag) + '</div><h2 class="rg93">' + esc(m.title) + '</h2>' +
-          (lead || editing() ? '<p class="rg94"' + sf('data-sf="lead"') + '>' + esc(m.lead) + '</p>' : '') + (editing() && !m.lead ? '<p class="rg94" style="opacity:.6">(Empty: the summary below is shown instead.)</p>' : '') +
-          '<div class="rg98"><button class="rg99 rg-hover9" data-href="contact.html" data-cms="solution-quote-btn" data-cms-type="text" data-cms-link="lnk-solution-quote">Get a Quote</button>' + (ds ? '<a class="rg100 rg-hover7" href="' + esc(ds) + '" target="_blank" rel="noopener">Data Sheet ↓</a>' : '') + '</div>' +
-          (editing() ? '<p class="rg206" style="margin-top:18px"><b>Summary</b> (shown on the home card and the Products tab):</p><p class="rg94"' + sf('data-sf="summary"') + '>' + esc(m.summary) + '</p>' : '') + '</div></div></section>' +
+          '<section class="rg80 rg-hero" data-sec-id="sec-product-hero">' + heroBg('img-hero-solution', m.image) + '<div class="rg81"><div class="rg82"><span class="rg18"></span>' + T('solution-eyebrow', 'RockGuard® HD | Products') + '</div><h1 class="rg83"' + sf('data-sf="title"') + '>' + R(m, 'title') + '</h1><div class="rg84"><button class="rg85 rg-hover8" data-href="products.html" style="background:rgba(255,255,255,.06);color:#d6c6b2">← All Products</button></div></div></section>' +
+          '<section class="rg86" data-sec-id="sec-product-detail"><div class="rg87"><div class="rg88" style="position:relative">' + img(m.image, m.title) + pbtn(m, 'dyn-photo', 'photo', '📷 Change photo') + '</div><div><div class="rg92"' + sf('data-sf="tag"') + '>' + R(m, 'tag') + '</div><h2 class="rg93"' + sf('data-sf="title"') + '>' + R(m, 'title') + '</h2>' +
+          (lead || editing() ? '<p class="rg94"' + sf('data-sf="lead"') + '>' + R(m, 'lead') + '</p>' : '') + (editing() && !m.lead ? '<p class="rg94" style="opacity:.6">(Empty: the summary below is shown instead.)</p>' : '') +
+          '<div class="rg98"><button class="rg99 rg-hover9" data-href="contact.html" data-cms="solution-quote-btn" data-cms-type="text" data-cms-link="lnk-solution-quote">Get a Quote</button>' + '<a class="rg100 rg-hover7" href="resources.html?prod=' + encodeURIComponent(p.key || p.slug) + '">Resources →</a></div>' +
+          (editing() ? '<p class="rg206" style="margin-top:18px"><b>Summary</b> (shown on the home card and the Products tab):</p><p class="rg94"' + sf('data-sf="summary"') + '>' + R(m, 'summary') + '</p>' : '') + '</div></div></section>' +
           (m.features.length || editing() ? '<section class="rg80" data-sec-id="sec-product-features"><div class="rg101"><div class="rg102"><div><div class="rg103"><span class="rg18"></span>' + esc(m.title) + '</div>' + T('solution-features-title', 'Features &amp; <span class="rg41">Benefits</span>', 'h3', 'rg104') + '</div><div class="rg105">' + pad2(m.features.length) + ' ' + T('solution-advantages', 'Key Advantages') + '</div></div><div class="rg106">' + feats + '</div>' + (editing() ? '<div class="rl-ctl" style="margin-top:20px">' + pbtn(m, 'dyn-add', 'addf', '＋ Add feature') + '</div>' : '') + '</div></section>' : '') +
           (m.downloads.length || editing() ? '<section class="rg114" data-sec-id="sec-product-downloads"><div class="rg115"><div><div class="rg116">' + T('solution-downloads-label', 'Downloads') + '</div><h2 class="rg117">' + esc(m.title) + ' Resources</h2></div></div><div class="rg132">' + dls + '</div>' + (editing() ? '<div class="rl-ctl" style="margin-top:20px">' + pbtn(m, 'dyn-add', 'addd', '＋ Add download') + '</div>' : '') + '</section>' : '');
         afterDraw();
